@@ -52,10 +52,69 @@ Expected response contains:
 - `allRequiredTablesPresent: true`
 - table flags for `ACCOUNT`, `PAYEE`, `RULE`, `TRANSACTION_TABLE`, `ALERT`
 
+## Alert API (Lifecycle)
+
+Base URL:
+- `http://localhost:8080/api/v1/alerts`
+
+Endpoints:
+- `POST /api/v1/alerts`
+- `GET /api/v1/alerts/{alertId}`
+- `GET /api/v1/alerts?status=OPEN&severity=HIGH`
+- `PATCH /api/v1/alerts/{alertId}/status`
+- `PATCH /api/v1/alerts/{alertId}/acknowledge`
+- `PATCH /api/v1/alerts/{alertId}/investigating`
+- `PATCH /api/v1/alerts/{alertId}/close`
+- `PATCH /api/v1/alerts/{alertId}/dismiss`
+
+Create alert body example:
+
+```json
+{
+  "ruleId": 1,
+  "transactionId": 1,
+  "severity": "HIGH"
+}
+```
+
+Generic status update body example:
+
+```json
+{
+  "status": "ACKNOWLEDGED"
+}
+```
+
+## Quick endpoint tests (PowerShell)
+
+```powershell
+# 1) Create an alert
+$createBody = @{
+  ruleId = 1
+  transactionId = 1
+  severity = "HIGH"
+} | ConvertTo-Json
+
+$created = Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/v1/alerts" -ContentType "application/json" -Body $createBody
+$alertId = $created.data.alertId
+
+# 2) Move through lifecycle
+Invoke-RestMethod -Method Patch -Uri "http://localhost:8080/api/v1/alerts/$alertId/acknowledge"
+Invoke-RestMethod -Method Patch -Uri "http://localhost:8080/api/v1/alerts/$alertId/investigating"
+Invoke-RestMethod -Method Patch -Uri "http://localhost:8080/api/v1/alerts/$alertId/close"
+
+# 3) Fetch single alert
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/v1/alerts/$alertId"
+```
+
 ## Run tests
+
+```powershell
+.\mvnw.cmd -Dtest=AlertServiceImplTest test
+```
+
+Run all tests:
 
 ```powershell
 .\mvnw.cmd test
 ```
-
-
