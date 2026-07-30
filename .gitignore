@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Sensitive configuration — each developer keeps their own local copy ###
+src/main/resources/application.properties
+
