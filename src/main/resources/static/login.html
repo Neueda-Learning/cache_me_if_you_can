@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>Transaction Monitoring Dashboard</h1>
+    <div>Login</div>
+</header>
+<main class="landing-main">
+    <section class="auth-card">
+        <h2>Login</h2>
+        <p class="subtitle">Use your registered training account.</p>
+        <div class="auth-grid">
+            <div>
+                <label for="loginEmail">Email</label>
+                <input id="loginEmail" type="email" placeholder="you@example.com">
+            </div>
+            <div>
+                <label for="loginPassword">Password</label>
+                <input id="loginPassword" type="password" placeholder="Password">
+            </div>
+        </div>
+        <p id="authMessage" class="subtitle inline-message"></p>
+        <div class="landing-actions">
+            <button id="loginButton" type="button">Login</button>
+            <a class="btn-link btn-link-secondary" href="/signup.html">Create account</a>
+        </div>
+    </section>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/auth-pages.js"></script>
+</body>
+</html>
+

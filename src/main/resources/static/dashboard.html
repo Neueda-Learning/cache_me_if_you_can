@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>Transaction Monitoring Dashboard</h1>
+    <div class="topbar-actions">
+        <span id="currentUser" class="user-chip"></span>
+        <button class="btn-secondary logout-btn" type="button">Logout</button>
+    </div>
+</header>
+<div class="layout">
+    <aside class="sidebar">
+        <a class="nav-link active" href="/dashboard.html">Dashboard</a>
+        <a class="nav-link" href="/transactions.html">Transactions</a>
+        <a class="nav-link" href="/alerts.html">Alerts</a>
+    </aside>
+    <main class="content">
+        <h2 class="page-title">Dashboard</h2>
+        <p class="subtitle">Live snapshot from backend alerts and transaction creation.</p>
+
+        <section class="cards">
+            <article class="card"><h3>Open Alerts</h3><div id="cardOpen" class="value">-</div></article>
+            <article class="card"><h3>Acknowledged</h3><div id="cardAck" class="value">-</div></article>
+            <article class="card"><h3>Investigating</h3><div id="cardInv" class="value">-</div></article>
+            <article class="card"><h3>Closed</h3><div id="cardClosed" class="value">-</div></article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">Create Transaction</div>
+            <div class="panel-body filters transaction-grid">
+                <div>
+                    <label for="accountId">From Account ID</label>
+                    <input id="accountId" type="number" min="1" placeholder="e.g. 1">
+                </div>
+                <div>
+                    <label for="payeeId">Payee Account ID</label>
+                    <input id="payeeId" type="number" min="1" placeholder="e.g. 2">
+                </div>
+                <div>
+                    <label for="amount">Amount</label>
+                    <input id="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 15000">
+                </div>
+                <div>
+                    <label for="transactionType">Transaction Type</label>
+                    <select id="transactionType">
+                        <option>TRANSFER</option>
+                        <option>PAYMENT</option>
+                        <option>WITHDRAWAL</option>
+                    </select>
+                </div>
+                <div><label>&nbsp;</label><button id="submitTransaction" type="button">Submit Transaction</button></div>
+                <div><label>&nbsp;</label><button id="clearTransaction" type="button" class="btn-secondary">Clear</button></div>
+            </div>
+            <div class="panel-body">
+                <p id="transactionResult" class="subtitle inline-message">No transaction submitted yet.</p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">Latest Active Alerts</div>
+            <div class="panel-body table-wrap">
+                <table>
+                    <thead>
+                    <tr><th>Alert ID</th><th>Severity</th><th>Status</th><th>Rule ID</th><th>Transaction ID</th><th>Created</th></tr>
+                    </thead>
+                    <tbody id="dashboardAlertsBody">
+                    <tr><td colspan="6">Loading alerts...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="alertModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
+    <div class="modal-card">
+        <h3 id="alertModalTitle">Alert Triggered</h3>
+        <p id="alertModalMessage">A rule violation has been detected.</p>
+        <button id="closeModal" type="button">Close</button>
+    </div>
+</div>
+
+<script src="/js/common.js"></script>
+<script src="/js/dashboard.js"></script>
+</body>
+</html>
+

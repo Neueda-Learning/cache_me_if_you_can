@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>Transaction Monitoring Dashboard</h1>
+    <div>Transactions</div>
+</header>
+<div class="layout">
+    <aside class="sidebar">
+        <a class="nav-link" href="/index.html">Dashboard</a>
+        <a class="nav-link active" href="/transactions.html">Transactions</a>
+        <a class="nav-link" href="/alerts.html">Alerts</a>
+        <a class="nav-link" href="/rules.html">Rules</a>
+    </aside>
+    <main class="content">
+        <h2 class="page-title">Transactions</h2>
+        <p class="subtitle">View all transactions with search and filters.</p>
+
+        <section class="panel">
+            <div class="panel-header">Filters</div>
+            <div class="panel-body filters">
+                <div>
+                    <label for="searchTx">Transaction ID</label>
+                    <input id="searchTx" placeholder="e.g. 10021">
+                </div>
+                <div>
+                    <label for="account">Account ID</label>
+                    <input id="account" placeholder="e.g. 1">
+                </div>
+                <div>
+                    <label for="fromDate">From</label>
+                    <input id="fromDate" type="datetime-local">
+                </div>
+                <div>
+                    <label for="toDate">To</label>
+                    <input id="toDate" type="datetime-local">
+                </div>
+                <div>
+                    <button>Apply Filters</button>
+                </div>
+                <div>
+                    <button class="btn-secondary">Reset</button>
+                </div>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">Transaction List</div>
+            <div class="panel-body table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Account</th>
+                        <th>Payee</th>
+                        <th>Amount</th>
+                        <th>Type</th>
+                        <th>Timestamp</th>
+                        <th>Alert?</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>10021</td>
+                        <td>1</td>
+                        <td>7</td>
+                        <td>$12,500.00</td>
+                        <td>TRANSFER</td>
+                        <td>2026-07-31 09:00</td>
+                        <td><span class="badge badge-sev-high">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>10020</td>
+                        <td>2</td>
+                        <td>4</td>
+                        <td>$950.00</td>
+                        <td>PAYMENT</td>
+                        <td>2026-07-31 08:51</td>
+                        <td>-</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Monitor Dashboard</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>Transaction Monitoring Dashboard</h1>
+    <div>Single Operator View</div>
+</header>
+<div class="layout">
+    <aside class="sidebar">
+        <a class="nav-link active" href="/index.html">Dashboard</a>
+        <a class="nav-link" href="/transactions.html">Transactions</a>
+        <a class="nav-link" href="/alerts.html">Alerts</a>
+        <a class="nav-link" href="/rules.html">Rules</a>
+    </aside>
+    <main class="content">
+        <h2 class="page-title">Dashboard</h2>
+        <p class="subtitle">Snapshot of alert volume, severity and transaction activity.</p>
+
+        <section class="cards">
+            <article class="card">
+                <h3>Open Alerts</h3>
+                <div class="value">24</div>
+            </article>
+            <article class="card">
+                <h3>Acknowledged</h3>
+                <div class="value">11</div>
+            </article>
+            <article class="card">
+                <h3>Alerts Today</h3>
+                <div class="value">39</div>
+            </article>
+            <article class="card">
+                <h3>Avg Resolution (min)</h3>
+                <div class="value">18</div>
+            </article>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">Create Transaction (Quick Test)</div>
+            <div class="panel-body filters transaction-grid">
+                <div>
+                    <label for="accountId">Account ID</label>
+                    <input id="accountId" type="number" min="1" value="1">
+                </div>
+                <div>
+                    <label for="payeeId">Payee ID</label>
+                    <input id="payeeId" type="number" min="1" value="1">
+                </div>
+                <div>
+                    <label for="amount">Amount</label>
+                    <input id="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 15000">
+                </div>
+                <div>
+                    <label for="transactionType">Transaction Type</label>
+                    <select id="transactionType">
+                        <option>TRANSFER</option>
+                        <option>PAYMENT</option>
+                        <option>WITHDRAWAL</option>
+                    </select>
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button id="submitTransaction" type="button">Submit Transaction</button>
+                </div>
+                <div>
+                    <label>&nbsp;</label>
+                    <button id="clearTransaction" type="button" class="btn-secondary">Clear</button>
+                </div>
+            </div>
+            <div class="panel-body">
+                <p id="transactionResult" class="subtitle inline-message">No transaction submitted yet.</p>
+            </div>
+        </section>
+
+        <section class="panel">
+            <div class="panel-header">Latest Open Alerts</div>
+            <div class="panel-body table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Alert ID</th>
+                        <th>Severity</th>
+                        <th>Status</th>
+                        <th>Rule</th>
+                        <th>Created</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>#321</td>
+                        <td><span class="badge badge-sev-critical">CRITICAL</span></td>
+                        <td><span class="badge badge-status-open">OPEN</span></td>
+                        <td>Daily Limit</td>
+                        <td>2026-07-31 09:02</td>
+                    </tr>
+                    <tr>
+                        <td>#320</td>
+                        <td><span class="badge badge-sev-high">HIGH</span></td>
+                        <td><span class="badge badge-status-open">OPEN</span></td>
+                        <td>Threshold</td>
+                        <td>2026-07-31 08:58</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+
+<div id="alertModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
+    <div class="modal-card">
+        <h3 id="alertModalTitle">Alert Triggered</h3>
+        <p id="alertModalMessage">A rule violation has been detected.</p>
+        <button id="closeModal" type="button">Close</button>
+    </div>
+</div>
+
+<script src="/js/dashboard.js"></script>
+</body>
+</html>

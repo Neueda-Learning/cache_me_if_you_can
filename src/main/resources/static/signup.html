@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+<header class="topbar">
+    <h1>Transaction Monitoring Dashboard</h1>
+    <div>Sign Up</div>
+</header>
+<main class="landing-main">
+    <section class="auth-card">
+        <h2>Create account</h2>
+        <p class="subtitle">This is local frontend auth for training UI flow.</p>
+        <div class="auth-grid">
+            <div>
+                <label for="signupName">Full Name</label>
+                <input id="signupName" type="text" placeholder="Operator Name">
+            </div>
+            <div>
+                <label for="signupEmail">Email</label>
+                <input id="signupEmail" type="email" placeholder="you@example.com">
+            </div>
+            <div>
+                <label for="signupPassword">Password</label>
+                <input id="signupPassword" type="password" placeholder="Password">
+            </div>
+        </div>
+        <p id="authMessage" class="subtitle inline-message"></p>
+        <div class="landing-actions">
+            <button id="signupButton" type="button">Sign Up</button>
+            <a class="btn-link btn-link-secondary" href="/login.html">Back to login</a>
+        </div>
+    </section>
+</main>
+<script src="/js/common.js"></script>
+<script src="/js/auth-pages.js"></script>
+</body>
+</html>
+
