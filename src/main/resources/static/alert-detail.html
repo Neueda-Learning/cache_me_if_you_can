@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Alert Detail</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/alert-detail.js"></script>
+</head>
+<body>
+
+  <div id="hawkLoader">
+    <img src="/images/HAWK.png" alt="Loading...">
+    <p class="loader-text">Loading · HAWK</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="/dashboard.html">
+      <img src="/images/HAWK.png" alt="HAWK" class="hawk-logo">
+    </a>
+    <div class="topbar-user">
+      <span id="operatorName">Operator</span>
+      <a href="/login.html" style="color:var(--hawk-red);font-weight:500;">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-link" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
+      <a class="nav-link active" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
+    </aside>
+
+    <main class="main">
+      <div class="page-actions">
+        <div>
+          <h1 id="alertTitle" class="page-title" style="margin-bottom:0;">Alert</h1>
+          <p class="page-subtitle" style="margin-top:4px;">Review alert details and manage the investigation lifecycle.</p>
+        </div>
+        <a href="/alerts.html" style="font-size:0.85rem; color:var(--hawk-red); font-weight:500;">← Back to Alerts</a>
+      </div>
+
+      <section class="grid grid-2">
+        <article class="card">
+          <h2 style="margin:0 0 16px; font-size:1rem; font-weight:700; border-bottom:1px solid var(--hawk-border); padding-bottom:10px;">Alert Details</h2>
+          <table style="border:none;">
+            <tbody>
+              <tr><td style="color:var(--hawk-grey); font-size:0.8rem; text-transform:uppercase; padding:8px 0; border:none;">Status</td><td id="alertStatus" style="border:none;"></td></tr>
+              <tr><td style="color:var(--hawk-grey); font-size:0.8rem; text-transform:uppercase; padding:8px 0; border:none;">Severity</td><td id="alertSeverity" style="border:none;"></td></tr>
+              <tr><td style="color:var(--hawk-grey); font-size:0.8rem; text-transform:uppercase; padding:8px 0; border:none;">Rule ID</td><td id="alertRule" style="border:none; font-weight:600;">—</td></tr>
+              <tr><td style="color:var(--hawk-grey); font-size:0.8rem; text-transform:uppercase; padding:8px 0; border:none;">Transaction ID</td><td id="alertTx" style="border:none; font-weight:600;">—</td></tr>
+              <tr><td style="color:var(--hawk-grey); font-size:0.8rem; text-transform:uppercase; padding:8px 0; border:none;">Created</td><td id="alertCreated" style="border:none;">—</td></tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article class="card">
+          <h2 style="margin:0 0 16px; font-size:1rem; font-weight:700; border-bottom:1px solid var(--hawk-border); padding-bottom:10px;">Lifecycle Actions</h2>
+          <div id="alertActions" class="inline-list" style="flex-wrap:wrap; gap:10px;"></div>
+          <p style="margin-top:18px; font-size:0.78rem; color:var(--hawk-grey); line-height:1.7;">
+            Transition path:<br>
+            <strong>OPEN</strong> → ACKNOWLEDGED → INVESTIGATING → <strong>CLOSED</strong><br>
+            Any active state → DISMISSED
+          </p>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+</body>
+</html>

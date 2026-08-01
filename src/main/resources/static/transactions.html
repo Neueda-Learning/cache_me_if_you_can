@@ -1,94 +1,74 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transactions</title>
-    <link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Transactions</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/transactions.js"></script>
 </head>
 <body>
-<header class="topbar">
-    <h1>Transaction Monitoring Dashboard</h1>
-    <div>Transactions</div>
-</header>
-<div class="layout">
+
+  <div id="hawkLoader">
+    <img src="/images/HAWK.png" alt="Loading...">
+    <p class="loader-text">Loading · HAWK</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="/dashboard.html">
+      <img src="/images/HAWK.png" alt="HAWK" class="hawk-logo">
+    </a>
+    <div class="topbar-user">
+      <span id="operatorName">Operator</span>
+      <a href="/login.html" style="color:var(--hawk-red);font-weight:500;">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
     <aside class="sidebar">
-        <a class="nav-link" href="/index.html">Dashboard</a>
-        <a class="nav-link active" href="/transactions.html">Transactions</a>
-        <a class="nav-link" href="/alerts.html">Alerts</a>
-        <a class="nav-link" href="/rules.html">Rules</a>
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-link active" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
+      <a class="nav-link" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
     </aside>
-    <main class="content">
-        <h2 class="page-title">Transactions</h2>
-        <p class="subtitle">View all transactions with search and filters.</p>
 
-        <section class="panel">
-            <div class="panel-header">Filters</div>
-            <div class="panel-body filters">
-                <div>
-                    <label for="searchTx">Transaction ID</label>
-                    <input id="searchTx" placeholder="e.g. 10021">
-                </div>
-                <div>
-                    <label for="account">Account ID</label>
-                    <input id="account" placeholder="e.g. 1">
-                </div>
-                <div>
-                    <label for="fromDate">From</label>
-                    <input id="fromDate" type="datetime-local">
-                </div>
-                <div>
-                    <label for="toDate">To</label>
-                    <input id="toDate" type="datetime-local">
-                </div>
-                <div>
-                    <button>Apply Filters</button>
-                </div>
-                <div>
-                    <button class="btn-secondary">Reset</button>
-                </div>
-            </div>
-        </section>
+    <main class="main">
+      <h1 class="page-title">Transaction Ledger</h1>
+      <p class="page-subtitle">Search and review all recorded transactions with filters by account, date range, and more.</p>
 
-        <section class="panel">
-            <div class="panel-header">Transaction List</div>
-            <div class="panel-body table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Account</th>
-                        <th>Payee</th>
-                        <th>Amount</th>
-                        <th>Type</th>
-                        <th>Timestamp</th>
-                        <th>Alert?</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>10021</td>
-                        <td>1</td>
-                        <td>7</td>
-                        <td>$12,500.00</td>
-                        <td>TRANSFER</td>
-                        <td>2026-07-31 09:00</td>
-                        <td><span class="badge badge-sev-high">HIGH</span></td>
-                    </tr>
-                    <tr>
-                        <td>10020</td>
-                        <td>2</td>
-                        <td>4</td>
-                        <td>$950.00</td>
-                        <td>PAYMENT</td>
-                        <td>2026-07-31 08:51</td>
-                        <td>-</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+      <form id="txFilters" class="filters card">
+        <input id="accountId" type="number" min="1" placeholder="Filter by Account ID">
+        <input id="from" type="datetime-local">
+        <input id="to" type="datetime-local">
+        <button class="btn-primary" type="submit">Search</button>
+        <button id="btnClear" class="btn-ghost" type="button">Clear</button>
+      </form>
+
+      <div class="stat-strip">
+        <span>Total Count: <strong id="statCount">0</strong></span>
+        <span>Total Volume: <strong id="statVolume">0.00</strong></span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Account</th>
+              <th>Payee</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
     </main>
-</div>
+  </div>
+
+  <div id="toast"></div>
 </body>
 </html>

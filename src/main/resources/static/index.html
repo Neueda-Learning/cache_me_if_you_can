@@ -1,126 +1,131 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction Monitor Dashboard</title>
-    <link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Intelligent Transaction Monitoring</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
 </head>
-<body>
-<header class="topbar">
-    <h1>Transaction Monitoring Dashboard</h1>
-    <div>Single Operator View</div>
-</header>
-<div class="layout">
-    <aside class="sidebar">
-        <a class="nav-link active" href="/index.html">Dashboard</a>
-        <a class="nav-link" href="/transactions.html">Transactions</a>
-        <a class="nav-link" href="/alerts.html">Alerts</a>
-        <a class="nav-link" href="/rules.html">Rules</a>
-    </aside>
-    <main class="content">
-        <h2 class="page-title">Dashboard</h2>
-        <p class="subtitle">Snapshot of alert volume, severity and transaction activity.</p>
+<body class="landing-page">
 
-        <section class="cards">
-            <article class="card">
-                <h3>Open Alerts</h3>
-                <div class="value">24</div>
-            </article>
-            <article class="card">
-                <h3>Acknowledged</h3>
-                <div class="value">11</div>
-            </article>
-            <article class="card">
-                <h3>Alerts Today</h3>
-                <div class="value">39</div>
-            </article>
-            <article class="card">
-                <h3>Avg Resolution (min)</h3>
-                <div class="value">18</div>
-            </article>
-        </section>
-
-        <section class="panel">
-            <div class="panel-header">Create Transaction (Quick Test)</div>
-            <div class="panel-body filters transaction-grid">
-                <div>
-                    <label for="accountId">Account ID</label>
-                    <input id="accountId" type="number" min="1" value="1">
-                </div>
-                <div>
-                    <label for="payeeId">Payee ID</label>
-                    <input id="payeeId" type="number" min="1" value="1">
-                </div>
-                <div>
-                    <label for="amount">Amount</label>
-                    <input id="amount" type="number" min="0.01" step="0.01" placeholder="e.g. 15000">
-                </div>
-                <div>
-                    <label for="transactionType">Transaction Type</label>
-                    <select id="transactionType">
-                        <option>TRANSFER</option>
-                        <option>PAYMENT</option>
-                        <option>WITHDRAWAL</option>
-                    </select>
-                </div>
-                <div>
-                    <label>&nbsp;</label>
-                    <button id="submitTransaction" type="button">Submit Transaction</button>
-                </div>
-                <div>
-                    <label>&nbsp;</label>
-                    <button id="clearTransaction" type="button" class="btn-secondary">Clear</button>
-                </div>
-            </div>
-            <div class="panel-body">
-                <p id="transactionResult" class="subtitle inline-message">No transaction submitted yet.</p>
-            </div>
-        </section>
-
-        <section class="panel">
-            <div class="panel-header">Latest Open Alerts</div>
-            <div class="panel-body table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Alert ID</th>
-                        <th>Severity</th>
-                        <th>Status</th>
-                        <th>Rule</th>
-                        <th>Created</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>#321</td>
-                        <td><span class="badge badge-sev-critical">CRITICAL</span></td>
-                        <td><span class="badge badge-status-open">OPEN</span></td>
-                        <td>Daily Limit</td>
-                        <td>2026-07-31 09:02</td>
-                    </tr>
-                    <tr>
-                        <td>#320</td>
-                        <td><span class="badge badge-sev-high">HIGH</span></td>
-                        <td><span class="badge badge-status-open">OPEN</span></td>
-                        <td>Threshold</td>
-                        <td>2026-07-31 08:58</td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-    </main>
-</div>
-
-<div id="alertModal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="alertModalTitle">
-    <div class="modal-card">
-        <h3 id="alertModalTitle">Alert Triggered</h3>
-        <p id="alertModalMessage">A rule violation has been detected.</p>
-        <button id="closeModal" type="button">Close</button>
+  <!-- ── Navigation ──────────────────────────────────────── -->
+  <nav class="landing-nav">
+    <a class="brand" href="/">
+      <img src="/images/HAWK.png" alt="HAWK" style="height:56px;">
+    </a>
+    <div class="landing-nav-links">
+      <a href="/login.html" class="btn-secondary" style="padding:8px 20px; border-radius:5px; font-size:0.88rem; font-weight:600;">Client Login</a>
+      <a href="/signup.html" class="btn-primary" style="padding:8px 20px; border-radius:5px; font-size:0.88rem; font-weight:600;">Create Account</a>
     </div>
-</div>
+  </nav>
 
-<script src="/js/dashboard.js"></script>
+  <!-- ── Hero ─────────────────────────────────────────────── -->
+  <section class="hero-section">
+    <img src="/images/HAWK.png" alt="HAWK" class="hero-logo">
+    <h1 class="hero-title">Real-Time <span>Transaction</span><br>Intelligence Platform</h1>
+    <p class="hero-subtitle">
+      HAWK monitors every transaction the moment it happens — flagging anomalies,
+      raising alerts, and giving your operations team a clear, structured workflow
+      to investigate and resolve threats fast.
+    </p>
+    <div class="hero-cta">
+      <a href="/login.html" class="btn-primary">Client Login</a>
+      <a href="/signup.html" class="btn-secondary">Create Account</a>
+    </div>
+  </section>
+
+  <!-- ── Stats Bar ────────────────────────────────────────── -->
+  <div class="stats-bar">
+    <div class="stats-bar-item">
+      <span class="stats-bar-num">99.9%</span>
+      <div class="stats-bar-label">Detection Accuracy</div>
+    </div>
+    <div class="stats-bar-item">
+      <span class="stats-bar-num">&lt; 50ms</span>
+      <div class="stats-bar-label">Alert Response Time</div>
+    </div>
+    <div class="stats-bar-item">
+      <span class="stats-bar-num">4</span>
+      <div class="stats-bar-label">Rule Engine Types</div>
+    </div>
+    <div class="stats-bar-item">
+      <span class="stats-bar-num">5</span>
+      <div class="stats-bar-label">Alert Lifecycle States</div>
+    </div>
+  </div>
+
+  <!-- ── Features ─────────────────────────────────────────── -->
+  <section class="features-section">
+    <h2 class="features-heading">Everything Your Team Needs</h2>
+    <p class="features-sub">Built for operations teams who need clarity, speed, and control in one place.</p>
+    <div class="features-grid">
+      <article class="feature-card">
+        <span class="feature-icon">🔍</span>
+        <h3>Configurable Rule Engine</h3>
+        <p>Define threshold, velocity, new payee, and daily-limit rules. Each rule fires independently and generates a scoped alert.</p>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon">🚨</span>
+        <h3>Severity-Based Alerting</h3>
+        <p>Alerts are classified as Critical, High, Medium, or Low — so your team always knows what to action first.</p>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon">🔄</span>
+        <h3>Full Alert Lifecycle</h3>
+        <p>Move alerts through OPEN → ACKNOWLEDGED → INVESTIGATING → CLOSED or DISMISSED with enforced state transitions.</p>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon">📊</span>
+        <h3>Operational Dashboard</h3>
+        <p>Live KPI cards, trend charts, and a real-time incident feed — all in one monitoring command centre.</p>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon">📋</span>
+        <h3>Transaction Audit Trail</h3>
+        <p>Every transaction is logged with account, payee, amount, type, and timestamp. Fully searchable and filterable.</p>
+      </article>
+      <article class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3>Secure by Design</h3>
+        <p>SQL injection prevention through PreparedStatement, server-side validation, and consistent error handling throughout.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- ── How It Works ─────────────────────────────────────── -->
+  <section class="how-section">
+    <h2 class="how-heading">How HAWK Works</h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="step-num">1</div>
+        <h4>Transaction Submitted</h4>
+        <p>A transaction enters the system via the REST API or integrated source.</p>
+      </div>
+      <div class="how-step">
+        <div class="step-num">2</div>
+        <h4>Rules Evaluated</h4>
+        <p>The rule engine checks each active rule against the transaction in real time.</p>
+      </div>
+      <div class="how-step">
+        <div class="step-num">3</div>
+        <h4>Alert Generated</h4>
+        <p>Any rule violation instantly creates a scoped alert with severity and context.</p>
+      </div>
+      <div class="how-step">
+        <div class="step-num">4</div>
+        <h4>Team Actions</h4>
+        <p>Operators acknowledge, investigate, and close or dismiss alerts with full traceability.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ───────────────────────────────────────────── -->
+  <footer class="landing-footer">
+    <span>HAWK © <span data-year></span> · Transaction Monitoring Platform</span>
+    <span>Powered by Spring Boot · MySQL · JDBC</span>
+  </footer>
+
+  <div id="toast"></div>
 </body>
 </html>

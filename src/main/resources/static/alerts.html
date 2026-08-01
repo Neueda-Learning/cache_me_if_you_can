@@ -1,118 +1,81 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Alerts</title>
-    <link rel="stylesheet" href="/css/styles.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Alert Management</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/alerts.js"></script>
 </head>
 <body>
-<header class="topbar">
-    <h1>Transaction Monitoring Dashboard</h1>
-    <div>Alerts</div>
-</header>
-<div class="layout">
+
+  <div id="hawkLoader">
+    <img src="/images/HAWK.png" alt="Loading...">
+    <p class="loader-text">Loading · HAWK</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="/dashboard.html">
+      <img src="/images/HAWK.png" alt="HAWK" class="hawk-logo">
+    </a>
+    <div class="topbar-user">
+      <span id="operatorName">Operator</span>
+      <a href="/login.html" style="color:var(--hawk-red);font-weight:500;">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
     <aside class="sidebar">
-        <a class="nav-link" href="/index.html">Dashboard</a>
-        <a class="nav-link" href="/transactions.html">Transactions</a>
-        <a class="nav-link active" href="/alerts.html">Alerts</a>
-        <a class="nav-link" href="/rules.html">Rules</a>
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-link" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
+      <a class="nav-link active" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
     </aside>
-    <main class="content">
-        <h2 class="page-title">Active Alerts</h2>
-        <p class="subtitle">Acknowledge, investigate, close or dismiss alerts.</p>
 
-        <section class="panel">
-            <div class="panel-header">Filters</div>
-            <div class="panel-body filters">
-                <div>
-                    <label for="status">Status</label>
-                    <select id="status">
-                        <option>OPEN</option>
-                        <option>ACKNOWLEDGED</option>
-                        <option>INVESTIGATING</option>
-                        <option>CLOSED</option>
-                        <option>DISMISSED</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="severity">Severity</label>
-                    <select id="severity">
-                        <option>LOW</option>
-                        <option>MEDIUM</option>
-                        <option>HIGH</option>
-                        <option>CRITICAL</option>
-                    </select>
-                </div>
-                <div>
-                    <label for="createdAfter">Created After</label>
-                    <input id="createdAfter" type="datetime-local">
-                </div>
-                <div>
-                    <label>&nbsp;</label>
-                    <button>Search</button>
-                </div>
-            </div>
-        </section>
+    <main class="main">
+      <h1 class="page-title">Alert Management</h1>
+      <p class="page-subtitle">Review, filter, and action all system alerts. Click an alert to manage its lifecycle.</p>
 
-        <section class="panel">
-            <div class="panel-header">Alert List</div>
-            <div class="panel-body table-wrap">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Severity</th>
-                        <th>Status</th>
-                        <th>Rule ID</th>
-                        <th>Transaction ID</th>
-                        <th>Created</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr>
-                        <td>321</td>
-                        <td><span class="badge badge-sev-critical">CRITICAL</span></td>
-                        <td><span class="badge badge-status-open">OPEN</span></td>
-                        <td>4</td>
-                        <td>10021</td>
-                        <td>2026-07-31 09:02</td>
-                        <td>
-                            <button>Acknowledge</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>318</td>
-                        <td><span class="badge badge-sev-high">HIGH</span></td>
-                        <td><span class="badge badge-status-investigating">INVESTIGATING</span></td>
-                        <td>1</td>
-                        <td>10010</td>
-                        <td>2026-07-31 08:11</td>
-                        <td>
-                            <button>Close</button>
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
+      <form id="alertFilters" class="filters card">
+        <select id="statusFilter">
+          <option value="">All Statuses</option>
+          <option>OPEN</option>
+          <option>ACKNOWLEDGED</option>
+          <option>INVESTIGATING</option>
+          <option>CLOSED</option>
+          <option>DISMISSED</option>
+        </select>
+        <select id="severityFilter">
+          <option value="">All Severities</option>
+          <option>CRITICAL</option>
+          <option>HIGH</option>
+          <option>MEDIUM</option>
+          <option>LOW</option>
+        </select>
+        <button class="btn-primary" type="submit">Apply Filters</button>
+      </form>
 
-        <section class="panel">
-            <div class="panel-header">Alert Details (sample layout)</div>
-            <div class="panel-body">
-                <p><strong>Alert ID:</strong> 321</p>
-                <p><strong>Status:</strong> <span class="badge badge-status-open">OPEN</span></p>
-                <p><strong>Rule:</strong> Daily Limit</p>
-                <p><strong>Triggered Transaction:</strong> 10021</p>
-                <div class="timeline">
-                    <p>Created: 2026-07-31 09:02</p>
-                    <p>Acknowledged: -</p>
-                    <p>Closed: -</p>
-                </div>
-            </div>
-        </section>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Alert ID</th>
+              <th>Rule</th>
+              <th>Transaction</th>
+              <th>Severity</th>
+              <th>Status</th>
+              <th>Created</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="alertsBody"></tbody>
+        </table>
+      </div>
     </main>
-</div>
+  </div>
+
+  <div id="toast"></div>
 </body>
 </html>

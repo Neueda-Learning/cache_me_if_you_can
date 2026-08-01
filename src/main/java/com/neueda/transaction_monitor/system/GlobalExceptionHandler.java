@@ -8,7 +8,6 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -37,12 +36,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(TransactionNotFoundException.class)
     public ResponseEntity<Map<String, Object>> handleNotFound(TransactionNotFoundException ex) {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
-    }
-
-    /** 404 — static resource or URL path does not exist */
-    @ExceptionHandler(NoResourceFoundException.class)
-    public ResponseEntity<Map<String, Object>> handleNoResource(NoResourceFoundException ex) {
-        return build(HttpStatus.NOT_FOUND, "Resource not found: " + ex.getResourcePath());
     }
 
     // ── Validation & Input Exceptions ─────────────────────────────────────────
@@ -101,3 +94,4 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(status).body(body);
     }
 }
+
