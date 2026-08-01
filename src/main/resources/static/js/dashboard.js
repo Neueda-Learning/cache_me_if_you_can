@@ -227,4 +227,66 @@ document.addEventListener("DOMContentLoaded", async () => {
   } finally {
     window.HawkUI.hideLoader();
   }
+
+  /* ── Real-time Alert Polling ─────────────────────────────────────────────── */
+  const knownAlertIds = new Set();
+  let firstPoll = true;
+
+  async function pollAlerts() {
+    try {
+      const alerts = await window.HawkUI.apiRequest("/api/v1/alerts?status=OPEN");
+      const arr = Array.isArray(alerts) ? alerts : [];
+      if (firstPoll) {
+        arr.forEach((a) => knownAlertIds.add(a.alertId));
+        firstPoll = false;
+        return;
+      }
+      const newAlerts = arr.filter((a) => !knownAlertIds.has(a.alertId));
+      if (newAlerts.length > 0) {
+        newAlerts.forEach((a) => knownAlertIds.add(a.alertId));
+        showAlertPopup(newAlerts);
+        // Refresh KPI counters
+        document.getElementById("kpiOpen").textContent = String(arr.length);
+      }
+    } catch (_) { /* silent */ }
+  }
+
+  function showAlertPopup(alerts) {
+    const popup = document.getElementById("alertPopup");
+    if (!popup) return;
+    const title = document.getElementById("alertPopupTitle");
+    const body  = document.getElementById("alertPopupBody");
+    title.textContent = alerts.length === 1
+      ? "1 New Alert — Immediate Attention Required"
+      : alerts.length + " New Alerts — Immediate Attention Required";
+    body.innerHTML = alerts.slice(0, 5).map((a) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+        <div>
+          <span class="badge ${window.HawkUI.statusClass(a.severity)}" style="margin-right:8px;">${a.severity}</span>
+          <strong>Alert #${a.alertId}</strong>
+          <span style="font-size:0.8rem;color:#777;margin-left:8px;">Tx #${a.transactionId || "—"}</span>
+        </div>
+        <a href="/alert-detail.html?id=${a.alertId}" style="font-size:0.8rem;color:#DB0011;font-weight:600;">Investigate →</a>
+      </div>`).join("") +
+      (alerts.length > 5 ? `<p style="font-size:0.8rem;color:#777;margin:10px 0 0;">…and ${alerts.length - 5} more.</p>` : "");
+    popup.style.display = "flex";
+    // Play a brief page-title flash
+    let blink = 0;
+    const origTitle = document.title;
+    const blinkTimer = setInterval(() => {
+      document.title = (blink++ % 2 === 0) ? "🚨 NEW ALERT — HAWK" : origTitle;
+      if (blink > 8) { clearInterval(blinkTimer); document.title = origTitle; }
+    }, 700);
+  }
+
+  const closeBtn    = document.getElementById("alertPopupClose");
+  const dismissBtn  = document.getElementById("alertPopupDismiss");
+  const alertPopup  = document.getElementById("alertPopup");
+  if (closeBtn)   closeBtn.addEventListener("click",   () => { alertPopup.style.display = "none"; });
+  if (dismissBtn) dismissBtn.addEventListener("click", () => { alertPopup.style.display = "none"; });
+  if (alertPopup) alertPopup.addEventListener("click", (e) => { if (e.target === alertPopup) alertPopup.style.display = "none"; });
+
+  // Start polling every 12 seconds
+  pollAlerts();
+  setInterval(pollAlerts, 12000);
 });

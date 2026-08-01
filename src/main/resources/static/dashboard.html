@@ -39,6 +39,12 @@
       <a class="nav-link" href="/transactions.html">
         <span class="nav-icon">💳</span> Transactions
       </a>
+      <a class="nav-link" href="/accounts.html">
+        <span class="nav-icon">🏦</span> Accounts
+      </a>
+      <a class="nav-link" href="/payees.html">
+        <span class="nav-icon">👤</span> Payees
+      </a>
       <a class="nav-link" href="/alerts.html">
         <span class="nav-icon">🚨</span> Alerts
       </a>
@@ -149,5 +155,26 @@
   </div>
 
   <div id="toast"></div>
+
+  <!-- ── New-Alert Popup Modal ─────────────────────────────── -->
+  <div id="alertPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8888;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
+      <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <span style="font-size:1.5rem;">🚨</span>
+          <div>
+            <p style="margin:0;font-size:0.7rem;font-weight:700;color:#DB0011;text-transform:uppercase;letter-spacing:0.06em;">New Alert(s) Detected</p>
+            <h3 id="alertPopupTitle" style="margin:2px 0 0;font-size:1.1rem;color:#1a1a1a;">—</h3>
+          </div>
+        </div>
+        <button id="alertPopupClose" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;line-height:1;" title="Dismiss">×</button>
+      </div>
+      <div id="alertPopupBody" style="padding:16px 24px;"></div>
+      <div style="padding:0 24px 20px;display:flex;gap:10px;">
+        <a href="/alerts.html" style="flex:1;text-align:center;padding:10px;background:#DB0011;color:#fff;border-radius:7px;font-weight:700;font-size:0.9rem;text-decoration:none;">Go to Alerts →</a>
+        <button id="alertPopupDismiss" style="flex:1;padding:10px;background:#f5f5f5;border:1px solid #ddd;border-radius:7px;font-weight:600;cursor:pointer;font-size:0.9rem;">Dismiss</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

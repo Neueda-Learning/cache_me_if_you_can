@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HAWK | Alert Management</title>
+  <title>HAWK | Payees</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script defer src="/js/common.js"></script>
-  <script defer src="/js/alerts.js"></script>
+  <script defer src="/js/payees.js"></script>
 </head>
 <body>
 
@@ -31,48 +31,38 @@
       <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
       <a class="nav-link" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
       <a class="nav-link" href="/accounts.html"><span class="nav-icon">🏦</span> Accounts</a>
-      <a class="nav-link" href="/payees.html"><span class="nav-icon">👤</span> Payees</a>
-      <a class="nav-link active" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link active" href="/payees.html"><span class="nav-icon">👤</span> Payees</a>
+      <a class="nav-link" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
       <a class="nav-link" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
     </aside>
 
     <main class="main">
-      <h1 class="page-title">Alert Management</h1>
-      <p class="page-subtitle">Review, filter, and action all system alerts. Click an alert to manage its lifecycle.</p>
+      <h1 class="page-title">Payee Registry</h1>
+      <p class="page-subtitle">Register recipient payees. Each transaction references a Payee ID from this list.</p>
 
-      <form id="alertFilters" class="filters card">
-        <select id="statusFilter">
-          <option value="">All Statuses</option>
-          <option>OPEN</option>
-          <option>ACKNOWLEDGED</option>
-          <option>INVESTIGATING</option>
-          <option>CLOSED</option>
-          <option>DISMISSED</option>
-        </select>
-        <select id="severityFilter">
-          <option value="">All Severities</option>
-          <option>CRITICAL</option>
-          <option>HIGH</option>
-          <option>MEDIUM</option>
-          <option>LOW</option>
-        </select>
-        <button class="btn-primary" type="submit">Apply Filters</button>
-      </form>
+      <!-- Add Payee Form -->
+      <section class="card" style="margin-bottom:16px;">
+        <h2 style="margin:0 0 16px;font-size:1rem;font-weight:700;">Register New Payee</h2>
+        <form id="payeeForm" class="filters">
+          <input id="payeeName" required placeholder="Payee Name (e.g. Bob's Electronics)">
+          <input id="payeeAccNum" required placeholder="Payee Account Number (12 digits)">
+          <input id="payeeBank" required placeholder="Bank Name (e.g. HSBC)">
+          <button class="btn-primary" type="submit">+ Add Payee</button>
+        </form>
+      </section>
 
+      <!-- Payees Table -->
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Alert ID</th>
-              <th>Rule</th>
-              <th>Transaction</th>
-              <th>Severity</th>
-              <th>Status</th>
-              <th>Created</th>
-              <th>Action</th>
+              <th>Payee ID</th>
+              <th>Payee Name</th>
+              <th>Account Number</th>
+              <th>Bank</th>
             </tr>
           </thead>
-          <tbody id="alertsBody"></tbody>
+          <tbody id="payeesBody"></tbody>
         </table>
       </div>
     </main>
@@ -81,3 +71,4 @@
   <div id="toast"></div>
 </body>
 </html>
+
