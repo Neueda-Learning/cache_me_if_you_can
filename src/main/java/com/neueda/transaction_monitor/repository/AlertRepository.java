@@ -3,6 +3,9 @@ package com.neueda.transaction_monitor.repository;
 import java.sql.PreparedStatement;
 import java.sql.Statement;
 import java.time.LocalDateTime;
+import java.sql.Timestamp;
+import java.util.Calendar;
+import java.util.TimeZone;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -67,10 +70,41 @@ public class AlertRepository {
         return jdbcTemplate.query(sql.toString(), alertRowMapper(), params.toArray());
     }
 
+    // Group alerts by rule and severity in the last `minutes` minutes. Returns a simple summary record.
+    public record GroupedAlert(Long ruleId, AlertSeverity severity, Integer count, java.time.LocalDateTime firstCreated) {}
+
+    public List<GroupedAlert> findGroupedAlerts(int minutes, AlertSeverity severity) {
+        StringBuilder sql = new StringBuilder(
+            "SELECT Rule_ID, Severity, COUNT(*) AS cnt, MIN(Created_At) AS first_created " +
+            "FROM ALERT WHERE Created_At >= ? ");
+
+        List<Object> params = new ArrayList<>();
+        java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusMinutes(minutes);
+        params.add(java.sql.Timestamp.valueOf(cutoff));
+
+        if (severity != null) {
+            sql.append(" AND Severity = ?");
+            params.add(severity.name());
+        }
+
+        sql.append(" GROUP BY Rule_ID, Severity ORDER BY cnt DESC");
+
+        return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
+            Long ruleId = rs.getLong("Rule_ID");
+            AlertSeverity sev = AlertSeverity.valueOf(rs.getString("Severity"));
+            int cnt = rs.getInt("cnt");
+            java.util.Calendar utc = java.util.Calendar.getInstance(java.util.TimeZone.getTimeZone("UTC"));
+            java.sql.Timestamp ts = rs.getTimestamp("first_created", utc);
+            java.time.LocalDateTime first = ts == null ? null : ts.toLocalDateTime();
+            return new GroupedAlert(ruleId, sev, cnt, first);
+        }, params.toArray());
+    }
+
     public void updateStatus(Long alertId, AlertStatus status, LocalDateTime closedAt) {
+        Timestamp closedTs = closedAt == null ? null : Timestamp.valueOf(closedAt);
         int updated = jdbcTemplate.update(
             "UPDATE ALERT SET Status = ?, Closed_At = ? WHERE Alert_ID = ?",
-            status.name(), closedAt, alertId
+            status.name(), closedTs, alertId
         );
         if (updated == 0) throw new IllegalStateException("Alert status update failed");
     }
@@ -83,10 +117,19 @@ public class AlertRepository {
             alert.setTransactionId(rs.getLong("Transaction_ID"));
             alert.setStatus(AlertStatus.valueOf(rs.getString("Status")));
             alert.setSeverity(AlertSeverity.valueOf(rs.getString("Severity")));
-            alert.setCreatedAt(rs.getTimestamp("Created_At").toLocalDateTime());
-            if (rs.getTimestamp("Closed_At") != null) {
-                alert.setClosedAt(rs.getTimestamp("Closed_At").toLocalDateTime());
+
+            // Read TIMESTAMP columns using an explicit UTC Calendar to avoid implicit timezone shifts
+            Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            java.sql.Timestamp createdTs = rs.getTimestamp("Created_At", utc);
+            if (createdTs != null) {
+                alert.setCreatedAt(createdTs.toLocalDateTime());
             }
+
+            java.sql.Timestamp closedTs = rs.getTimestamp("Closed_At", utc);
+            if (closedTs != null) {
+                alert.setClosedAt(closedTs.toLocalDateTime());
+            }
+
             return alert;
         };
     }
