@@ -62,6 +62,14 @@ public class AlertController {
         return ResponseEntity.ok(ApiResponse.success("Alerts fetched", alertService.getAlerts(status, severity)));
     }
 
+    @GetMapping("/grouped")
+    public ResponseEntity<ApiResponse<List<com.neueda.transaction_monitor.dto.AlertDto.GroupedAlertResponse>>> getGrouped(
+        @RequestParam(required = false) Integer minutes,
+        @RequestParam(required = false) AlertSeverity severity
+    ) {
+        return ResponseEntity.ok(ApiResponse.success("Alerts grouped", alertService.getGroupedAlerts(minutes, severity)));
+    }
+
     @PatchMapping("/{alertId}/status")
     public ResponseEntity<ApiResponse<AlertResponse>> updateStatus(
         @PathVariable Long alertId, @Valid @RequestBody UpdateAlertStatusRequest request

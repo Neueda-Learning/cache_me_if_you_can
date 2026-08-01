@@ -4,6 +4,7 @@ import com.neueda.transaction_monitor.model.Alert.AlertSeverity;
 import com.neueda.transaction_monitor.model.Alert.AlertStatus;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class AlertDto {
 
@@ -21,8 +22,17 @@ public class AlertDto {
         Long transactionId,
         AlertStatus status,
         AlertSeverity severity,
-        LocalDateTime createdAt,
-        LocalDateTime closedAt
+        OffsetDateTime createdAt,
+        OffsetDateTime closedAt
+    ) {}
+
+    public record GroupedAlertResponse(
+        Long ruleId,
+        String ruleName,
+        AlertSeverity severity,
+        Integer count,
+        OffsetDateTime firstCreated,
+        String message
     ) {}
 }
 

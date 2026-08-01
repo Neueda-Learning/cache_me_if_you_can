@@ -36,4 +36,24 @@ public class Transaction {
 
     /** Auto-set by MySQL default — omit from POST body. */
     private LocalDateTime timeStamp;
+
+    // Explicit getters/setters included to avoid IDE/compiler issues when Lombok
+    // annotation processing is not available in the environment.
+    public Integer getTransactionId() { return transactionId; }
+    public void setTransactionId(Integer transactionId) { this.transactionId = transactionId; }
+
+    public Integer getAccountId() { return accountId; }
+    public void setAccountId(Integer accountId) { this.accountId = accountId; }
+
+    public Integer getPayeeId() { return payeeId; }
+    public void setPayeeId(Integer payeeId) { this.payeeId = payeeId; }
+
+    public BigDecimal getAmount() { return amount; }
+    public void setAmount(BigDecimal amount) { this.amount = amount; }
+
+    public String getTransactionType() { return transactionType; }
+    public void setTransactionType(String transactionType) { this.transactionType = transactionType; }
+
+    public LocalDateTime getTimeStamp() { return timeStamp; }
+    public void setTimeStamp(LocalDateTime timeStamp) { this.timeStamp = timeStamp; }
 }
