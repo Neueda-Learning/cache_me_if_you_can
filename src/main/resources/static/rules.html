@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Rules Engine</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/rules.js"></script>
+</head>
+<body>
+
+  <div id="hawkLoader">
+    <img src="/images/HAWK.png" alt="Loading...">
+    <p class="loader-text">Loading · HAWK</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="/dashboard.html">
+      <img src="/images/HAWK.png" alt="HAWK" class="hawk-logo">
+    </a>
+    <div class="topbar-user">
+      <span id="operatorName">Operator</span>
+      <a href="/login.html" style="color:var(--hawk-red);font-weight:500;">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-link" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
+      <a class="nav-link" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link active" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
+    </aside>
+
+    <main class="main">
+      <h1 class="page-title">Rules Engine</h1>
+      <p class="page-subtitle">Configure and manage monitoring rules. Each active rule evaluates every incoming transaction.</p>
+
+      <section class="card" style="margin-bottom:16px;">
+        <div class="inline-list">
+          <input id="activeOnly" type="checkbox">
+          <label for="activeOnly" style="font-size:0.88rem; font-weight:500;">Show active rules only</label>
+        </div>
+      </section>
+
+      <section class="card" style="margin-bottom:16px;">
+        <h2 style="margin:0 0 16px; font-size:1rem; font-weight:700;">Add New Rule</h2>
+        <form id="ruleForm" class="filters">
+          <input id="ruleName" required placeholder="Rule name (e.g. High Value Check)">
+          <select id="ruleType" required>
+            <option value="THRESHOLD">THRESHOLD</option>
+            <option value="VELOCITY">VELOCITY</option>
+            <option value="NEW_PAYEE">NEW_PAYEE</option>
+            <option value="DAILY_LIMIT">DAILY_LIMIT</option>
+          </select>
+          <select id="severity" required>
+            <option value="HIGH">HIGH</option>
+            <option value="CRITICAL">CRITICAL</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="LOW">LOW</option>
+          </select>
+          <input id="threshold" type="number" step="0.01" placeholder="Threshold amount">
+          <input id="timeWindow" type="number" min="1" placeholder="Time window (mins)">
+          <button class="btn-primary" type="submit">+ Create Rule</button>
+        </form>
+      </section>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Rule ID</th>
+              <th>Name</th>
+              <th>Type</th>
+              <th>Severity</th>
+              <th>Threshold / Window</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="rulesBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+</body>
+</html>
