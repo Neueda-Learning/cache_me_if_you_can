@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HAWK | Transactions</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <script defer src="/js/common.js"></script>
+  <script defer src="/js/transactions.js"></script>
+</head>
+<body>
+
+  <div id="hawkLoader">
+    <img src="/images/HAWK.png" alt="Loading...">
+    <p class="loader-text">Loading · HAWK</p>
+  </div>
+
+  <header class="topbar">
+    <a class="brand" href="/dashboard.html">
+      <img src="/images/HAWK.png" alt="HAWK" class="hawk-logo">
+    </a>
+    <div class="topbar-user">
+      <span id="operatorName">Operator</span>
+      <a href="/login.html" style="color:var(--hawk-red);font-weight:500;">Logout</a>
+    </div>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="nav-section-label">Navigation</div>
+      <a class="nav-link" href="/dashboard.html"><span class="nav-icon">🏠</span> Dashboard</a>
+      <a class="nav-link active" href="/transactions.html"><span class="nav-icon">💳</span> Transactions</a>
+      <a class="nav-link" href="/alerts.html"><span class="nav-icon">🚨</span> Alerts</a>
+      <a class="nav-link" href="/rules.html"><span class="nav-icon">⚙️</span> Rules</a>
+    </aside>
+
+    <main class="main">
+      <h1 class="page-title">Transaction Ledger</h1>
+      <p class="page-subtitle">Search and review all recorded transactions with filters by account, date range, and more.</p>
+
+      <form id="txFilters" class="filters card">
+        <input id="accountId" type="number" min="1" placeholder="Filter by Account ID">
+        <input id="from" type="datetime-local">
+        <input id="to" type="datetime-local">
+        <button class="btn-primary" type="submit">Search</button>
+        <button id="btnClear" class="btn-ghost" type="button">Clear</button>
+      </form>
+
+      <div class="stat-strip">
+        <span>Total Count: <strong id="statCount">0</strong></span>
+        <span>Total Volume: <strong id="statVolume">0.00</strong></span>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Transaction ID</th>
+              <th>Account</th>
+              <th>Payee</th>
+              <th>Amount</th>
+              <th>Type</th>
+              <th>Timestamp</th>
+            </tr>
+          </thead>
+          <tbody id="txBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast"></div>
+</body>
+</html>
