@@ -22,23 +22,24 @@ public class AccountRepository {
     }
 
     public List<Account> findAll() {
-        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Created_At FROM ACCOUNT ORDER BY Account_ID ASC";
+        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Email, Created_At FROM ACCOUNT ORDER BY Account_ID ASC";
         return jdbcTemplate.query(sql, rowMapper());
     }
 
     public Optional<Account> findById(Integer id) {
-        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Created_At FROM ACCOUNT WHERE Account_ID = ?";
+        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Email, Created_At FROM ACCOUNT WHERE Account_ID = ?";
         return jdbcTemplate.query(sql, rowMapper(), id).stream().findFirst();
     }
 
     public Account save(Account account) {
-        String sql = "INSERT INTO ACCOUNT (Account_Number, Account_Holder_Name, Balance) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO ACCOUNT (Account_Number, Account_Holder_Name, Balance, Email) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, account.getAccountNumber());
             ps.setString(2, account.getAccountHolderName());
             ps.setBigDecimal(3, account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO);
+            ps.setString(4, account.getEmail());
             return ps;
         }, keyHolder);
         Number key = keyHolder.getKey();
@@ -53,6 +54,7 @@ public class AccountRepository {
             a.setAccountNumber(rs.getString("Account_Number"));
             a.setAccountHolderName(rs.getString("Account_Holder_Name"));
             a.setBalance(rs.getBigDecimal("Balance"));
+            a.setEmail(rs.getString("Email"));
             java.sql.Timestamp ts = rs.getTimestamp("Created_At");
             if (ts != null) a.setCreatedAt(ts.toLocalDateTime());
             return a;
