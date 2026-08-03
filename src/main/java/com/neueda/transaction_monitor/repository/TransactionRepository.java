@@ -3,8 +3,6 @@ package com.neueda.transaction_monitor.repository;
 import com.neueda.transaction_monitor.model.AccountSummary;
 import com.neueda.transaction_monitor.model.Transaction;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -19,7 +17,6 @@ import java.util.Optional;
 public class TransactionRepository {
 
     private final JdbcTemplate jdbcTemplate;
-    private static final Logger log = LoggerFactory.getLogger(TransactionRepository.class);
 
     public TransactionRepository(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
@@ -66,12 +63,6 @@ public class TransactionRepository {
         if (key != null) {
             t.setTransactionId(key.intValue());
         }
-        // After insert the DB will set the Time_Stamp column; re-query the
-        // inserted row so the returned Transaction object contains the
-        // Time_Stamp (and any other DB-defaulted values).
-        if (t.getTransactionId() != null) {
-            return findById(t.getTransactionId()).orElse(t);
-        }
         return t;
     }
 
@@ -91,6 +82,14 @@ public class TransactionRepository {
     public List<Transaction> findByAccountId(int accountId) {
         String sql = "SELECT * FROM TRANSACTION_TABLE WHERE Account_ID = ? ORDER BY Time_Stamp DESC";
         return jdbcTemplate.query(sql, transactionRowMapper, accountId);
+    }
+
+    /**
+     * Returns all transactions, most recent first.
+     */
+    public List<Transaction> findAll() {
+        String sql = "SELECT * FROM TRANSACTION_TABLE ORDER BY Time_Stamp DESC";
+        return jdbcTemplate.query(sql, transactionRowMapper);
     }
 
     /**
@@ -122,47 +121,21 @@ public class TransactionRepository {
      *   DELIMITER ;
      */
     public AccountSummary getAccountTransactionSummary(int accountId) {
-        // Call the stored procedure GetAccountSummary(accountId).
-        try {
-            org.springframework.jdbc.core.CallableStatementCreator csc = new org.springframework.jdbc.core.CallableStatementCreator() {
-                @Override
-                public java.sql.CallableStatement createCallableStatement(java.sql.Connection con) throws java.sql.SQLException {
-                    java.sql.CallableStatement cs = con.prepareCall("{CALL GetAccountSummary(?)}");
-                    cs.setInt(1, accountId);
-                    return cs;
-                }
-            };
-
-            org.springframework.jdbc.core.CallableStatementCallback<AccountSummary> callback = new org.springframework.jdbc.core.CallableStatementCallback<>() {
-                @Override
-                public AccountSummary doInCallableStatement(java.sql.CallableStatement cs) throws java.sql.SQLException, org.springframework.dao.DataAccessException {
-                    try (java.sql.ResultSet rs = cs.executeQuery()) {
-                        if (rs.next()) {
-                            java.math.BigDecimal totalAmount = rs.getBigDecimal("total_amount");
-                            if (totalAmount == null) totalAmount = java.math.BigDecimal.ZERO;
-                            AccountSummary as = new AccountSummary();
-                            as.setAccountId(rs.getInt("Account_ID"));
-                            as.setTotalTransactions(rs.getInt("total_transactions"));
-                            as.setTotalAmount(totalAmount);
-                            return as;
-                        }
+        return jdbcTemplate.execute(
+            (Connection conn) -> conn.prepareCall("{CALL GetAccountSummary(?)}"),
+            (CallableStatement cs) -> {
+                cs.setInt(1, accountId);
+                try (ResultSet rs = cs.executeQuery()) {
+                    if (rs.next()) {
+                        return new AccountSummary(
+                            rs.getInt("Account_ID"),
+                            rs.getInt("total_transactions"),
+                            rs.getBigDecimal("total_amount")
+                        );
                     }
-                    AccountSummary empty = new AccountSummary();
-                    empty.setAccountId(accountId);
-                    empty.setTotalTransactions(0);
-                    empty.setTotalAmount(java.math.BigDecimal.ZERO);
-                    return empty;
                 }
-            };
-
-            return jdbcTemplate.execute(csc, callback);
-        } catch (Exception e) {
-            log.error("Error calling GetAccountSummary for account {}: {}", accountId, e.getMessage(), e);
-            AccountSummary fallback = new AccountSummary();
-            fallback.setAccountId(accountId);
-            fallback.setTotalTransactions(0);
-            fallback.setTotalAmount(java.math.BigDecimal.ZERO);
-            return fallback;
-        }
+                return new AccountSummary(accountId, 0, java.math.BigDecimal.ZERO);
+            }
+        );
     }
 }

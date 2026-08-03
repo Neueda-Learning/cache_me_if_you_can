@@ -61,7 +61,7 @@ a:hover { color: var(--hawk-red); }
   color: var(--hawk-black);
 }
 
-.brand img.hawk-logo { height: 62px; width: auto; object-fit: contain; }
+.brand img.hawk-logo { height: 68px; width: auto; object-fit: contain; }
 .brand-word { font-size: 0.95rem; color: var(--hawk-black); }
 
 .topbar-user {
@@ -289,7 +289,7 @@ button {
   position: sticky; top: 0; z-index: 10;
   box-shadow: var(--hawk-shadow-sm);
 }
-.landing-nav .brand img { height: 56px; }
+.landing-nav .brand img { height: 62px; }
 .landing-nav-links { display: flex; gap: 12px; align-items: center; }
 
 .hero-section {

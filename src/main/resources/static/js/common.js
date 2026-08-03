@@ -1,5 +1,11 @@
 (function () {
 
+  const ALERT_STATE_KEY = "hawk-alert-popup-state";
+  const ALERT_POLL_INTERVAL_MS = 8000;
+  const ALERT_REMINDER_INTERVAL_MS = 24 * 60 * 60 * 1000;
+  const ACTIVE_ALERT_STATUSES = new Set(["OPEN", "ACKNOWLEDGED", "INVESTIGATING"]);
+  const TERMINAL_ALERT_STATUSES = new Set(["CLOSED", "DISMISSED"]);
+
   /* ── JWT helpers ──────────────────────────────────────────── */
   function getToken()  { return localStorage.getItem("hawk-jwt"); }
   function getRole()   { return localStorage.getItem("hawk-role"); }
@@ -170,7 +176,6 @@
     const userArea = document.querySelector(".topbar-user");
     if (!userArea) return;
 
-    // Inject settings button before logout link
     const logoutLink = userArea.querySelector("#logoutLink") || userArea.querySelector("a[href='/login.html']");
     const settingsBtn = document.createElement("button");
     settingsBtn.textContent = "⚙️";
@@ -191,7 +196,6 @@
 
     if (logoutLink) {
       userArea.insertBefore(settingsBtn, logoutLink);
-      // Replace hard logout link with JS logout
       logoutLink.href = "#";
       logoutLink.addEventListener("click", (e) => { e.preventDefault(); logout(); });
     } else {
@@ -199,14 +203,247 @@
     }
   }
 
-  /* ── Guard: redirect to login if no JWT (for inner app pages) */
-  function authGuard() {
+  /* ── Guard / route helpers ─────────────────────────────── */
+  function currentPath() {
+    return window.location.pathname.replace(/\/$/, "") || "/index.html";
+  }
+
+  function isPublicPage() {
     const pub = ["/", "/index.html", "/login.html", "/signup.html"];
-    const path = window.location.pathname.replace(/\/$/, "") || "/index.html";
-    const isPublic = pub.some(p => path === p || path.endsWith(p));
-    if (!isPublic && !getToken()) {
+    const path = currentPath();
+    return pub.some(p => path === p || path.endsWith(p));
+  }
+
+  function isAlertsWorkbenchPage() {
+    const path = currentPath();
+    return path.endsWith("/alerts.html") || path.endsWith("/alert-detail.html") || path === "/alerts.html" || path === "/alert-detail.html";
+  }
+
+  function authGuard() {
+    if (!isPublicPage() && !getToken()) {
       window.location.href = "/login.html";
     }
+  }
+
+  /* ── Alert notification state ──────────────────────────── */
+  function readAlertState() {
+    try {
+      const raw = JSON.parse(localStorage.getItem(ALERT_STATE_KEY) || "{}");
+      return raw && typeof raw === "object" ? raw : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writeAlertState(state) {
+    localStorage.setItem(ALERT_STATE_KEY, JSON.stringify(state));
+  }
+
+  function clearAlertNotification(alertId) {
+    const state = readAlertState();
+    delete state[String(alertId)];
+    writeAlertState(state);
+  }
+
+  function syncAlertNotificationState(alerts) {
+    const state = readAlertState();
+    const byId = new Map((alerts || []).map((a) => [String(a.alertId), a]));
+
+    Object.keys(state).forEach((id) => {
+      const alert = byId.get(id);
+      if (!alert || TERMINAL_ALERT_STATUSES.has(alert.status)) {
+        delete state[id];
+        return;
+      }
+      state[id].status = alert.status;
+    });
+
+    writeAlertState(state);
+    return state;
+  }
+
+  function rememberAlertsShown(alerts, type) {
+    const state = readAlertState();
+    const now = Date.now();
+    (alerts || []).forEach((alert) => {
+      const id = String(alert.alertId);
+      const existing = state[id] || {};
+      if (!existing.firstShownAt) existing.firstShownAt = now;
+      existing.lastShownAt = now;
+      if (type === "reminder") existing.lastReminderAt = now;
+      existing.status = alert.status;
+      state[id] = existing;
+    });
+    writeAlertState(state);
+  }
+
+  function shouldShowFreshAlert(alert, state) {
+    if (!alert || !ACTIVE_ALERT_STATUSES.has(alert.status)) return false;
+    const entry = state[String(alert.alertId)];
+    return !entry || !entry.lastShownAt;
+  }
+
+  function shouldShowReminder(alert, state, now) {
+    if (!alert || !ACTIVE_ALERT_STATUSES.has(alert.status)) return false;
+    const entry = state[String(alert.alertId)];
+    if (!entry || !entry.lastShownAt) return false;
+    const anchor = entry.lastReminderAt || entry.lastShownAt;
+    return (now - anchor) >= ALERT_REMINDER_INTERVAL_MS;
+  }
+
+  function hideAnyAlertPopup() {
+    const popup = document.getElementById("alertPopup") || document.getElementById("globalAlertPopup");
+    if (popup) popup.style.display = "none";
+  }
+
+  function ensureGlobalAlertPopup() {
+    if (document.getElementById("alertPopup") || document.getElementById("globalAlertPopup")) return;
+    const overlay = document.createElement("div");
+    overlay.id = "globalAlertPopup";
+    overlay.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8888;align-items:center;justify-content:center;";
+    overlay.innerHTML = `
+      <div style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
+        <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:1.5rem;">🚨</span>
+            <div>
+              <p id="globalAlertPopupLabel" style="margin:0;font-size:0.7rem;font-weight:700;color:#DB0011;text-transform:uppercase;letter-spacing:0.06em;">Alert Notification</p>
+              <h3 id="globalAlertPopupTitle" style="margin:2px 0 0;font-size:1.1rem;color:#1a1a1a;">-</h3>
+            </div>
+          </div>
+          <button id="globalAlertPopupClose" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#999;line-height:1;" title="Dismiss">×</button>
+        </div>
+        <div id="globalAlertPopupBody" style="padding:16px 24px;"></div>
+        <div style="padding:0 24px 20px;display:flex;gap:10px;">
+          <a href="/alerts.html" style="flex:1;text-align:center;padding:10px;background:#DB0011;color:#fff;border-radius:7px;font-weight:700;font-size:0.9rem;text-decoration:none;">Go to Alerts →</a>
+          <button id="globalAlertPopupDismiss" style="flex:1;padding:10px;background:#f5f5f5;border:1px solid #ddd;border-radius:7px;font-weight:600;cursor:pointer;font-size:0.9rem;">Dismiss</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = () => { overlay.style.display = "none"; };
+    document.getElementById("globalAlertPopupClose").addEventListener("click", close);
+    document.getElementById("globalAlertPopupDismiss").addEventListener("click", close);
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  }
+
+  function getPopupRefs() {
+    if (document.getElementById("alertPopup")) {
+      return {
+        overlay: document.getElementById("alertPopup"),
+        title: document.getElementById("alertPopupTitle"),
+        body: document.getElementById("alertPopupBody"),
+        label: null,
+      };
+    }
+    ensureGlobalAlertPopup();
+    return {
+      overlay: document.getElementById("globalAlertPopup"),
+      title: document.getElementById("globalAlertPopupTitle"),
+      body: document.getElementById("globalAlertPopupBody"),
+      label: document.getElementById("globalAlertPopupLabel"),
+    };
+  }
+
+  function showAlertPopup(alerts, type) {
+    const popup = getPopupRefs();
+    if (!popup.overlay || !popup.title || !popup.body) return;
+
+    const isReminder = type === "reminder";
+    if (popup.label) {
+      popup.label.textContent = isReminder ? "Pending Alert Reminder" : "New Alert(s) Detected";
+    }
+    popup.title.textContent = isReminder
+      ? `${alerts.length} alert${alerts.length === 1 ? "" : "s"} still unresolved after 24 hours`
+      : (alerts.length === 1 ? "1 New Alert — Immediate Attention Required" : `${alerts.length} New Alerts — Immediate Attention Required`);
+
+    popup.body.innerHTML = alerts.slice(0, 5).map((a) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;">
+        <div>
+          <span class="badge ${statusClass(a.severity)}" style="margin-right:8px;">${a.severity}</span>
+          <strong>Alert #${a.alertId}</strong>
+          <span style="font-size:0.8rem;color:#777;margin-left:8px;">Tx #${a.transactionId || "—"}</span>
+        </div>
+        <a href="/alert-detail.html?id=${a.alertId}" style="font-size:0.8rem;color:#DB0011;font-weight:600;">Investigate →</a>
+      </div>`).join("") +
+      (alerts.length > 5 ? `<p style="font-size:0.8rem;color:#777;margin:10px 0 0;">…and ${alerts.length - 5} more.</p>` : "");
+
+    popup.overlay.style.display = "flex";
+
+    let blink = 0;
+    const origTitle = document.title;
+    const blinkTimer = setInterval(() => {
+      document.title = (blink++ % 2 === 0)
+        ? (isReminder ? "⏰ ALERT REMINDER — HAWK" : "🚨 NEW ALERT — HAWK")
+        : origTitle;
+      if (blink > 8) {
+        clearInterval(blinkTimer);
+        document.title = origTitle;
+      }
+    }, 700);
+  }
+
+  async function autoAcknowledgeShownOpenAlerts(alerts) {
+    const state = readAlertState();
+    const toAck = (alerts || []).filter((alert) => alert.status === "OPEN" && state[String(alert.alertId)]?.lastShownAt);
+    if (toAck.length === 0) return;
+
+    await Promise.all(toAck.map(async (alert) => {
+      try {
+        await apiRequest(`/api/v1/alerts/${alert.alertId}/acknowledge`, { method: "PATCH" });
+      } catch (_) {
+        // Ignore race conditions / already-advanced alerts.
+      }
+    }));
+  }
+
+  function updateDashboardOpenCount(alerts) {
+    const el = document.getElementById("kpiOpen");
+    if (!el) return;
+    const count = (alerts || []).filter((a) => a.status === "OPEN").length;
+    el.textContent = String(count);
+  }
+
+  function startGlobalAlertPolling() {
+    if (isPublicPage() || !getToken()) return;
+    if (!document.getElementById("alertPopup")) {
+      ensureGlobalAlertPopup();
+    }
+
+    const poll = async () => {
+      try {
+        const allAlerts = await apiRequest("/api/v1/alerts");
+        const alerts = Array.isArray(allAlerts) ? allAlerts : [];
+        const activeAlerts = alerts.filter((a) => ACTIVE_ALERT_STATUSES.has(a.status));
+        const state = syncAlertNotificationState(alerts);
+        updateDashboardOpenCount(alerts);
+
+        if (isAlertsWorkbenchPage()) {
+          hideAnyAlertPopup();
+          await autoAcknowledgeShownOpenAlerts(activeAlerts);
+          return;
+        }
+
+        const freshAlerts = activeAlerts.filter((alert) => shouldShowFreshAlert(alert, state));
+        if (freshAlerts.length > 0) {
+          rememberAlertsShown(freshAlerts, "new");
+          showAlertPopup(freshAlerts, "new");
+          return;
+        }
+
+        const now = Date.now();
+        const reminderAlerts = activeAlerts.filter((alert) => shouldShowReminder(alert, state, now));
+        if (reminderAlerts.length > 0) {
+          rememberAlertsShown(reminderAlerts, "reminder");
+          showAlertPopup(reminderAlerts, "reminder");
+        }
+      } catch (err) {
+        console.warn("[HAWK] Global alert polling failed:", err);
+      }
+    };
+
+    poll();
+    setInterval(poll, ALERT_POLL_INTERVAL_MS);
   }
 
   /* ── Expose ────────────────────────────────────────────── */
@@ -222,6 +459,8 @@
     logout,
     getToken,
     getRole,
+    syncAlertNotificationState,
+    clearAlertNotification,
   };
 
   document.addEventListener("DOMContentLoaded", () => {
@@ -230,5 +469,6 @@
     setOperatorName();
     injectChangePasswordModal();
     wireTopbar();
+    startGlobalAlertPolling();
   });
 })();
