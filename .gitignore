@@ -35,3 +35,6 @@ build/
 ### Sensitive configuration — each developer keeps their own local copy ###
 src/main/resources/application.properties
 
+### Local Docker secrets — never commit ###
+.env
+
