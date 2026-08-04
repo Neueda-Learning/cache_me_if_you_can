@@ -18,11 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
       body.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--hawk-grey);padding:20px;">No alerts found</td></tr>`;
       return;
     }
-    rows.forEach((a) => {
+      rows.forEach((a) => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td><strong>#${a.alertId}</strong></td>
-        <td>${a.ruleId}</td>
+        <td>${a.ruleName ? a.ruleName : a.ruleId}</td>
         <td>${a.transactionId}</td>
         <td><span class="badge ${window.HawkUI.statusClass(a.severity)}">${a.severity}</span></td>
         <td><span class="badge ${window.HawkUI.statusClass(a.status)}">${a.status}</span></td>

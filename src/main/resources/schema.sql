@@ -61,4 +61,10 @@ CREATE TABLE IF NOT EXISTS ALERT (
 );
 
 
+-- NOTE: Stored-procedure creation moved to application startup code because
+-- the standard JDBC script runner cannot process MySQL client DELIMITER
+-- directives. The procedure GetTransactionList will be created/updated at
+-- application startup by TransactionMonitorApplication.
+
+
 

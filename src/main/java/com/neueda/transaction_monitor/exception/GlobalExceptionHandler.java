@@ -18,9 +18,9 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @ControllerAdvice
-public class GlobalExceptionHandler {
+class AppGlobalExceptionHandler {
 
-    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
+    private static final Logger log = LoggerFactory.getLogger(AppGlobalExceptionHandler.class);
 
     @ExceptionHandler(TransactionNotFoundException.class)
     public ResponseEntity<Object> handleNotFound(TransactionNotFoundException ex) {
@@ -62,4 +62,6 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiResponse.ErrorResponse.of("An unexpected error occurred"));
     }
 }
+
+
 

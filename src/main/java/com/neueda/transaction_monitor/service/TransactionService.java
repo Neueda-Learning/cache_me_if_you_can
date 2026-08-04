@@ -206,4 +206,23 @@ public class TransactionService {
     public AccountSummary getAccountSummary(int accountId) {
         return transactionRepository.getAccountTransactionSummary(accountId);
     }
+
+    /**
+     * Returns transactions for the UI legend view (includes account numbers).
+     * filterBy accepted values (case-insensitive): transactionId, accountNumber, payeeAccountNumber
+     */
+    public java.util.List<com.neueda.transaction_monitor.model.TransactionView> getTransactionList(String filterBy, String value) {
+        String fb = "ALL";
+        String val = value;
+        if (filterBy != null && !filterBy.isBlank()) {
+            switch (filterBy.toLowerCase()) {
+                case "transactionid", "transactionId", "txn", "txnid", "transaction" -> fb = "TXN";
+                case "accountnumber", "accountNumber", "account" -> fb = "ACCOUNT";
+                case "payeeaccountnumber", "payeeAccountNumber", "payee" -> fb = "PAYEE";
+                default -> fb = "ALL";
+            }
+        }
+        if (val == null) val = "";
+        return transactionRepository.getTransactionList(fb, val);
+    }
 }

@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const ruleEl = document.getElementById("alertRule");
   const createdEl = document.getElementById("alertCreated");
   const txEl = document.getElementById("alertTx");
+  const accountEl = document.getElementById("alertAccount");
+  const payeeEl = document.getElementById("alertPayee");
   const actionWrap = document.getElementById("alertActions");
 
   if (!id) {
@@ -52,9 +54,11 @@ document.addEventListener("DOMContentLoaded", () => {
     title.textContent = `Alert #${a.alertId}`;
     statusEl.innerHTML = `<span class="badge ${window.HawkUI.statusClass(a.status)}">${a.status}</span>`;
     severityEl.innerHTML = `<span class="badge ${window.HawkUI.statusClass(a.severity)}">${a.severity}</span>`;
-    ruleEl.textContent = String(a.ruleId);
+    ruleEl.textContent = a.ruleName ? String(a.ruleName) : String(a.ruleId);
     createdEl.textContent = window.HawkUI.fmtDate(a.createdAt);
     txEl.textContent = String(a.transactionId);
+    accountEl.textContent = a.accountNumber ? String(a.accountNumber) : "—";
+    payeeEl.textContent = a.payeeAccountNumber ? String(a.payeeAccountNumber) : "—";
     renderActions(a.status);
   }
 

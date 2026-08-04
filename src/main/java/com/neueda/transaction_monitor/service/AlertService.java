@@ -113,8 +113,16 @@ public class AlertService {
         OffsetDateTime created = alert.getCreatedAt() == null ? null : alert.getCreatedAt().atOffset(ZoneOffset.UTC);
         OffsetDateTime closed  = alert.getClosedAt()  == null ? null : alert.getClosedAt().atOffset(ZoneOffset.UTC);
         return new AlertResponse(
-            alert.getAlertId(), alert.getRuleId(), alert.getTransactionId(),
-            alert.getStatus(), alert.getSeverity(), created, closed
+            alert.getAlertId(),
+            alert.getRuleId(),
+            alert.getRuleName(),
+            alert.getTransactionId(),
+            alert.getAccountNumber(),
+            alert.getPayeeAccountNumber(),
+            alert.getStatus(),
+            alert.getSeverity(),
+            created,
+            closed
         );
     }
 }

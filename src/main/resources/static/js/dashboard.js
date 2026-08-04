@@ -151,17 +151,27 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const [openAlerts, allAlerts, txToday, tx7days] = await Promise.all([
+    // Use the same joined transaction list endpoint as the transactions page
+    // for consistency; then compute the 24h and 7-day slices client-side.
+    const [openAlerts, allAlerts, allTx] = await Promise.all([
       window.HawkUI.apiRequest("/api/v1/alerts?status=OPEN"),
       window.HawkUI.apiRequest("/api/v1/alerts"),
-      window.HawkUI.apiRequest(`/api/transactions/range?from=${daysAgoIso(1)}&to=${toIso}`),
-      window.HawkUI.apiRequest(`/api/transactions/range?from=${daysAgoIso(7)}&to=${toIso}`),
+      window.HawkUI.apiRequest(`/api/transactions/list?filterBy=ALL&value=`),
     ]);
 
     const openArr = Array.isArray(openAlerts) ? openAlerts : [];
     const allArr = Array.isArray(allAlerts) ? allAlerts : [];
-    const todayArr = Array.isArray(txToday) ? txToday : [];
-    const tx7Arr = Array.isArray(tx7days) ? tx7days : [];
+    const allTxArr = Array.isArray(allTx) ? allTx : [];
+
+    const nowMs = now.getTime();
+    const ms24 = 24 * 60 * 60 * 1000;
+    const ms7 = 7 * 24 * 60 * 60 * 1000;
+    const todayArr = allTxArr.filter((tx) => {
+      try { const t = new Date(tx.timeStamp); return !Number.isNaN(t.getTime()) && (nowMs - t.getTime()) <= ms24; } catch (_) { return false; }
+    });
+    const tx7Arr = allTxArr.filter((tx) => {
+      try { const t = new Date(tx.timeStamp); return !Number.isNaN(t.getTime()) && (nowMs - t.getTime()) <= ms7; } catch (_) { return false; }
+    });
 
     document.getElementById("kpiOpen").textContent = String(openArr.length);
     document.getElementById("kpiTx").textContent = String(todayArr.length);
