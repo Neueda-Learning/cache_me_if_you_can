@@ -22,6 +22,131 @@ public class TransactionRepository {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    /**
+     * Calls the stored procedure GetTransactionList(p_filter_by, p_value) which
+     * returns transactions together with the payer and payee account numbers.
+     * filterBy values expected by the procedure: 'ALL', 'TXN', 'ACCOUNT', 'PAYEE'
+     */
+    public java.util.List<com.neueda.transaction_monitor.model.TransactionView> getTransactionList(String filterBy, String value) {
+        try {
+            final String fb = (filterBy == null || filterBy.isBlank()) ? "ALL" : filterBy.toUpperCase();
+            final String val = (value == null) ? "" : value;
+
+            org.springframework.jdbc.core.CallableStatementCreator csc = new org.springframework.jdbc.core.CallableStatementCreator() {
+                @Override
+                public java.sql.CallableStatement createCallableStatement(java.sql.Connection con) throws java.sql.SQLException {
+                    java.sql.CallableStatement cs = con.prepareCall("{CALL GetTransactionList(?, ?)}");
+                    cs.setString(1, fb);
+                    cs.setString(2, val);
+                    return cs;
+                }
+            };
+
+            org.springframework.jdbc.core.CallableStatementCallback<java.util.List<com.neueda.transaction_monitor.model.TransactionView>> callback =
+                    new org.springframework.jdbc.core.CallableStatementCallback<java.util.List<com.neueda.transaction_monitor.model.TransactionView>>() {
+                        @Override
+                        public java.util.List<com.neueda.transaction_monitor.model.TransactionView> doInCallableStatement(java.sql.CallableStatement cs) throws java.sql.SQLException, org.springframework.dao.DataAccessException {
+                            java.util.List<com.neueda.transaction_monitor.model.TransactionView> out = new java.util.ArrayList<>();
+                            try (java.sql.ResultSet rs = cs.executeQuery()) {
+                                while (rs.next()) {
+                                    com.neueda.transaction_monitor.model.TransactionView v = new com.neueda.transaction_monitor.model.TransactionView();
+                                    v.setTransactionId(rs.getInt("Transaction_ID"));
+                                    v.setAccountNumber(rs.getString("Account_Number"));
+                                    v.setPayeeAccountNumber(rs.getString("Payee_Account_Number"));
+                                    v.setAmount(rs.getBigDecimal("Amount"));
+                                    v.setTransactionType(rs.getString("Transaction_Type"));
+                                    java.sql.Timestamp ts = rs.getTimestamp("Time_Stamp");
+                                    if (ts != null) v.setTimeStamp(ts.toLocalDateTime());
+                                    out.add(v);
+                                }
+                            }
+                            return out;
+                        }
+                    };
+
+            try {
+                return jdbcTemplate.execute(csc, callback);
+            } catch (Exception e) {
+                log.warn("Stored-proc call failed (GetTransactionList), falling back to inline query: {}", e.getMessage());
+                // Fallback: run an equivalent SELECT using JdbcTemplate so UI still gets results
+                String sqlBase = "SELECT t.Transaction_ID, a.Account_Number AS Account_Number, p.Payee_Account_Number AS Payee_Account_Number, t.Amount, t.Transaction_Type, t.Time_Stamp " +
+                        "FROM TRANSACTION_TABLE t JOIN ACCOUNT a ON t.Account_ID = a.Account_ID JOIN PAYEE p ON t.Payee_ID = p.Payee_ID ";
+
+                java.util.List<com.neueda.transaction_monitor.model.TransactionView> out = new java.util.ArrayList<>();
+                try {
+                    switch (fb) {
+                        case "TXN": {
+                            String q = sqlBase + "WHERE t.Transaction_ID = ? ORDER BY t.Time_Stamp DESC";
+                            out = jdbcTemplate.query(q, (rs, rowNum) -> {
+                                com.neueda.transaction_monitor.model.TransactionView v = new com.neueda.transaction_monitor.model.TransactionView();
+                                v.setTransactionId(rs.getInt("Transaction_ID"));
+                                v.setAccountNumber(rs.getString("Account_Number"));
+                                v.setPayeeAccountNumber(rs.getString("Payee_Account_Number"));
+                                v.setAmount(rs.getBigDecimal("Amount"));
+                                v.setTransactionType(rs.getString("Transaction_Type"));
+                                java.sql.Timestamp ts = rs.getTimestamp("Time_Stamp");
+                                if (ts != null) v.setTimeStamp(ts.toLocalDateTime());
+                                return v;
+                            }, Integer.valueOf(val));
+                            break;
+                        }
+                        case "ACCOUNT": {
+                            String q = sqlBase + "WHERE a.Account_Number = ? ORDER BY t.Time_Stamp DESC";
+                            out = jdbcTemplate.query(q, (rs, rowNum) -> {
+                                com.neueda.transaction_monitor.model.TransactionView v = new com.neueda.transaction_monitor.model.TransactionView();
+                                v.setTransactionId(rs.getInt("Transaction_ID"));
+                                v.setAccountNumber(rs.getString("Account_Number"));
+                                v.setPayeeAccountNumber(rs.getString("Payee_Account_Number"));
+                                v.setAmount(rs.getBigDecimal("Amount"));
+                                v.setTransactionType(rs.getString("Transaction_Type"));
+                                java.sql.Timestamp ts = rs.getTimestamp("Time_Stamp");
+                                if (ts != null) v.setTimeStamp(ts.toLocalDateTime());
+                                return v;
+                            }, val);
+                            break;
+                        }
+                        case "PAYEE": {
+                            String q = sqlBase + "WHERE p.Payee_Account_Number = ? ORDER BY t.Time_Stamp DESC";
+                            out = jdbcTemplate.query(q, (rs, rowNum) -> {
+                                com.neueda.transaction_monitor.model.TransactionView v = new com.neueda.transaction_monitor.model.TransactionView();
+                                v.setTransactionId(rs.getInt("Transaction_ID"));
+                                v.setAccountNumber(rs.getString("Account_Number"));
+                                v.setPayeeAccountNumber(rs.getString("Payee_Account_Number"));
+                                v.setAmount(rs.getBigDecimal("Amount"));
+                                v.setTransactionType(rs.getString("Transaction_Type"));
+                                java.sql.Timestamp ts = rs.getTimestamp("Time_Stamp");
+                                if (ts != null) v.setTimeStamp(ts.toLocalDateTime());
+                                return v;
+                            }, val);
+                            break;
+                        }
+                        default: {
+                            String q = sqlBase + "ORDER BY t.Time_Stamp DESC";
+                            out = jdbcTemplate.query(q, (rs, rowNum) -> {
+                                com.neueda.transaction_monitor.model.TransactionView v = new com.neueda.transaction_monitor.model.TransactionView();
+                                v.setTransactionId(rs.getInt("Transaction_ID"));
+                                v.setAccountNumber(rs.getString("Account_Number"));
+                                v.setPayeeAccountNumber(rs.getString("Payee_Account_Number"));
+                                v.setAmount(rs.getBigDecimal("Amount"));
+                                v.setTransactionType(rs.getString("Transaction_Type"));
+                                java.sql.Timestamp ts = rs.getTimestamp("Time_Stamp");
+                                if (ts != null) v.setTimeStamp(ts.toLocalDateTime());
+                                return v;
+                            });
+                        }
+                    }
+                } catch (Exception ex2) {
+                    log.error("Fallback inline query also failed for GetTransactionList: {}", ex2.getMessage(), ex2);
+                    return java.util.Collections.emptyList();
+                }
+                return out;
+            }
+        } catch (Exception e) {
+            log.error("Error calling GetTransactionList: {}", e.getMessage(), e);
+            return java.util.Collections.emptyList();
+        }
+    }
+
     // ── RowMapper ──────────────────────────────────────────────────────────────
     // Shared across all query methods — maps SQL columns to Transaction POJO fields.
     private final RowMapper<Transaction> transactionRowMapper = (rs, rowNum) -> {
@@ -45,8 +170,15 @@ public class TransactionRepository {
      * The generated primary key is set back on the returned object.
      */
     public Transaction save(Transaction t) {
-        String sql = "INSERT INTO TRANSACTION_TABLE (Account_ID, Payee_ID, Amount, Transaction_Type) "
-                   + "VALUES (?, ?, ?, ?)";
+        // If caller provided a timestamp, include it in the INSERT so the DB
+        // preserves the supplied value. Otherwise let the DB default (CURRENT_TIMESTAMP).
+        boolean hasTs = t.getTimeStamp() != null;
+        String sql;
+        if (hasTs) {
+            sql = "INSERT INTO TRANSACTION_TABLE (Account_ID, Payee_ID, Amount, Transaction_Type, Time_Stamp) VALUES (?, ?, ?, ?, ?)";
+        } else {
+            sql = "INSERT INTO TRANSACTION_TABLE (Account_ID, Payee_ID, Amount, Transaction_Type) VALUES (?, ?, ?, ?)";
+        }
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -56,6 +188,9 @@ public class TransactionRepository {
             ps.setInt(2, t.getPayeeId());
             ps.setBigDecimal(3, t.getAmount());
             ps.setString(4, t.getTransactionType());
+            if (hasTs) {
+                ps.setTimestamp(5, Timestamp.valueOf(t.getTimeStamp()));
+            }
             return ps;
         }, keyHolder);
 

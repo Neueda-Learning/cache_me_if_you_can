@@ -3,7 +3,6 @@ package com.neueda.transaction_monitor.dto;
 import com.neueda.transaction_monitor.model.Alert.AlertSeverity;
 import com.neueda.transaction_monitor.model.Alert.AlertStatus;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 
 public class AlertDto {
@@ -19,7 +18,10 @@ public class AlertDto {
     public record AlertResponse(
         Long alertId,
         Long ruleId,
+        String ruleName,
         Long transactionId,
+        String accountNumber,
+        String payeeAccountNumber,
         AlertStatus status,
         AlertSeverity severity,
         OffsetDateTime createdAt,

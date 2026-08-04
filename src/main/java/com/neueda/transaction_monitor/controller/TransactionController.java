@@ -83,4 +83,15 @@ public class TransactionController {
     public ResponseEntity<AccountSummary> getAccountSummary(@PathVariable int accountId) {
         return ResponseEntity.ok(transactionService.getAccountSummary(accountId));
     }
+
+    /**
+     * GET /api/transactions/list?filterBy=accountNumber&value=123456789012
+     * Returns transactions enriched with account and payee account numbers.
+     */
+    @GetMapping("/list")
+    public ResponseEntity<java.util.List<com.neueda.transaction_monitor.model.TransactionView>> getTransactionList(
+            @RequestParam(required = false) String filterBy,
+            @RequestParam(required = false) String value) {
+        return ResponseEntity.ok(transactionService.getTransactionList(filterBy, value));
+    }
 }

@@ -24,8 +24,15 @@ import com.neueda.transaction_monitor.model.Alert.AlertStatus;
 public class AlertRepository {
 
     private static final String BASE_SELECT = """
-        SELECT Alert_ID, Rule_ID, Transaction_ID, Status, Severity, Created_At, Closed_At
-        FROM ALERT
+        SELECT a.Alert_ID, a.Rule_ID, r.Rule_Name, a.Transaction_ID,
+               acct.Account_Number AS Account_Number, p.Payee_Account_Number AS Payee_Account_Number,
+               a.Status, a.Severity, a.Created_At, a.Closed_At
+        FROM ALERT a
+        LEFT JOIN RULE r ON a.Rule_ID = r.Rule_ID
+        LEFT JOIN TRANSACTION_TABLE t ON a.Transaction_ID = t.Transaction_ID
+        LEFT JOIN ACCOUNT acct ON t.Account_ID = acct.Account_ID
+        LEFT JOIN PAYEE p ON t.Payee_ID = p.Payee_ID
+        
         """;
 
     private final JdbcTemplate jdbcTemplate;
@@ -55,7 +62,7 @@ public class AlertRepository {
     }
 
     public Optional<Alert> findById(Long alertId) {
-        String sql = BASE_SELECT + " WHERE Alert_ID = ?";
+        String sql = BASE_SELECT + " WHERE a.Alert_ID = ?";
         return jdbcTemplate.query(sql, alertRowMapper(), alertId).stream().findFirst();
     }
 
@@ -63,10 +70,10 @@ public class AlertRepository {
         StringBuilder sql = new StringBuilder(BASE_SELECT).append(" WHERE 1=1");
         List<Object> params = new ArrayList<>();
 
-        if (status != null) { sql.append(" AND Status = ?"); params.add(status.name()); }
-        if (severity != null) { sql.append(" AND Severity = ?"); params.add(severity.name()); }
+        if (status != null) { sql.append(" AND a.Status = ?"); params.add(status.name()); }
+        if (severity != null) { sql.append(" AND a.Severity = ?"); params.add(severity.name()); }
 
-        sql.append(" ORDER BY Created_At DESC");
+        sql.append(" ORDER BY a.Created_At DESC");
         return jdbcTemplate.query(sql.toString(), alertRowMapper(), params.toArray());
     }
 
@@ -75,19 +82,19 @@ public class AlertRepository {
 
     public List<GroupedAlert> findGroupedAlerts(int minutes, AlertSeverity severity) {
         StringBuilder sql = new StringBuilder(
-            "SELECT Rule_ID, Severity, COUNT(*) AS cnt, MIN(Created_At) AS first_created " +
-            "FROM ALERT WHERE Created_At >= ? ");
+            "SELECT a.Rule_ID, a.Severity, COUNT(*) AS cnt, MIN(a.Created_At) AS first_created " +
+            "FROM ALERT a WHERE a.Created_At >= ? ");
 
         List<Object> params = new ArrayList<>();
         java.time.LocalDateTime cutoff = java.time.LocalDateTime.now().minusMinutes(minutes);
         params.add(java.sql.Timestamp.valueOf(cutoff));
 
         if (severity != null) {
-            sql.append(" AND Severity = ?");
+            sql.append(" AND a.Severity = ?");
             params.add(severity.name());
         }
 
-        sql.append(" GROUP BY Rule_ID, Severity ORDER BY cnt DESC");
+        sql.append(" GROUP BY a.Rule_ID, a.Severity ORDER BY cnt DESC");
 
         return jdbcTemplate.query(sql.toString(), (rs, rowNum) -> {
             Long ruleId = rs.getLong("Rule_ID");
@@ -114,9 +121,15 @@ public class AlertRepository {
             Alert alert = new Alert();
             alert.setAlertId(rs.getLong("Alert_ID"));
             alert.setRuleId(rs.getLong("Rule_ID"));
+            // optional joined fields
+            try { alert.setRuleName(rs.getString("Rule_Name")); } catch (Exception e) { /* ignore */ }
             alert.setTransactionId(rs.getLong("Transaction_ID"));
             alert.setStatus(AlertStatus.valueOf(rs.getString("Status")));
             alert.setSeverity(AlertSeverity.valueOf(rs.getString("Severity")));
+
+            // joined account/payee
+            try { alert.setAccountNumber(rs.getString("Account_Number")); } catch (Exception e) { /* ignore */ }
+            try { alert.setPayeeAccountNumber(rs.getString("Payee_Account_Number")); } catch (Exception e) { /* ignore */ }
 
             // Read TIMESTAMP columns using an explicit UTC Calendar to avoid implicit timezone shifts
             Calendar utc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));

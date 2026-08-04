@@ -17,6 +17,10 @@ public class Alert {
     private Long transactionId;
     private AlertStatus status;
     private AlertSeverity severity;
+    // Joined/read-only view fields populated by repository when available
+    private String ruleName;
+    private String accountNumber;
+    private String payeeAccountNumber;
     private LocalDateTime createdAt;
     private LocalDateTime closedAt;
 
@@ -34,6 +38,15 @@ public class Alert {
 
     public AlertSeverity getSeverity() { return severity; }
     public void setSeverity(AlertSeverity severity) { this.severity = severity; }
+
+    public String getRuleName() { return ruleName; }
+    public void setRuleName(String ruleName) { this.ruleName = ruleName; }
+
+    public String getAccountNumber() { return accountNumber; }
+    public void setAccountNumber(String accountNumber) { this.accountNumber = accountNumber; }
+
+    public String getPayeeAccountNumber() { return payeeAccountNumber; }
+    public void setPayeeAccountNumber(String payeeAccountNumber) { this.payeeAccountNumber = payeeAccountNumber; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }

@@ -41,7 +41,13 @@
       <p class="page-subtitle">Search and review all recorded transactions with filters by account, date range, and more.</p>
 
       <form id="txFilters" class="filters card">
-        <input id="accountId" type="number" min="1" placeholder="Filter by Account ID">
+        <select id="filterBy">
+          <option value="ALL">ALL</option>
+          <option value="transactionId">TRANSACTION ID</option>
+          <option value="accountNumber">ACCOUNT NUMBER</option>
+          <option value="payeeAccountNumber">PAYEE ACCOUNT NUMBER</option>
+        </select>
+        <input id="filterValue" type="text" placeholder="" />
         <input id="from" type="datetime-local">
         <input id="to" type="datetime-local">
         <button class="btn-primary" type="submit">Search</button>
@@ -58,8 +64,8 @@
           <thead>
             <tr>
               <th>Transaction ID</th>
-              <th>Account</th>
-              <th>Payee</th>
+              <th>Account Number</th>
+              <th>Payee Account Number</th>
               <th>Amount</th>
               <th>Type</th>
               <th>Timestamp</th>

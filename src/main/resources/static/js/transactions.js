@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tbody = document.getElementById("txBody");
   const filterForm = document.getElementById("txFilters");
-  let refreshTimer = null;
   const stats = {
     count: document.getElementById("statCount"),
     volume: document.getElementById("statVolume"),
@@ -19,7 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (from && to) {
       data = await window.HawkUI.apiRequest(`/api/transactions/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
     } else {
-      data = await window.HawkUI.apiRequest("/api/transactions");
+      const now = window.HawkUI.nowLocalIsoNoZone();
+      const d = new Date();
+      d.setDate(d.getDate() - 7);
+      const start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T00:00:00`;
+      data = await window.HawkUI.apiRequest(`/api/transactions/range?from=${start}&to=${now}`);
     }
 
     const rows = Array.isArray(data) ? data : [];
@@ -62,27 +65,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btnClear").addEventListener("click", () => {
     filterForm.reset();
-    loadTransactions().catch((err) => {
-      window.HawkUI.hideLoader();
-      window.HawkUI.showToast(err.message);
-    });
   });
 
   loadTransactions().catch((err) => {
     window.HawkUI.hideLoader();
     window.HawkUI.showToast(err.message);
-  });
-
-  // Keep the ledger live when transactions are injected externally (e.g., Postman).
-  refreshTimer = setInterval(() => {
-    loadTransactions().catch((err) => {
-      window.HawkUI.hideLoader();
-      window.HawkUI.showToast("Auto-refresh failed: " + err.message);
-    });
-  }, 10000);
-
-  window.addEventListener("beforeunload", () => {
-    if (refreshTimer) clearInterval(refreshTimer);
   });
 });
 
