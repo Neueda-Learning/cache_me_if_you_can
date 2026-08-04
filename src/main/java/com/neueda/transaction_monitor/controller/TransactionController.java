@@ -38,6 +38,15 @@ public class TransactionController {
     }
 
     /**
+     * GET /api/transactions
+     * Returns complete transaction history, most recent first.
+     */
+    @GetMapping
+    public ResponseEntity<List<Transaction>> getAll() {
+        return ResponseEntity.ok(transactionService.getAllTransactions());
+    }
+
+    /**
      * GET /api/transactions/{id}
      * Returns HTTP 404 automatically if the ID does not exist.
      */

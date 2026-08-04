@@ -5,8 +5,6 @@ import com.neueda.transaction_monitor.model.AccountSummary;
 import com.neueda.transaction_monitor.model.Transaction;
 import com.neueda.transaction_monitor.repository.TransactionRepository;
 import com.neueda.transaction_monitor.repository.RuleRepository;
-import com.neueda.transaction_monitor.repository.AccountRepository;
-import com.neueda.transaction_monitor.service.EmailService;
 import com.neueda.transaction_monitor.dto.AlertDto.CreateAlertRequest;
 import com.neueda.transaction_monitor.service.AlertService;
 import com.neueda.transaction_monitor.rule.AmountThresholdRule;
@@ -19,11 +17,8 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
-import java.text.NumberFormat;
 
 @Service
 public class TransactionService {
@@ -34,22 +29,16 @@ public class TransactionService {
     private final RuleRepository ruleRepository;
     private final AlertService alertService;
     private final JdbcTemplate jdbcTemplate;
-    private final AccountRepository accountRepository;
-    private final EmailService emailService;
 
     @Autowired
     public TransactionService(TransactionRepository transactionRepository,
                               RuleRepository ruleRepository,
                               AlertService alertService,
-                              JdbcTemplate jdbcTemplate,
-                              AccountRepository accountRepository,
-                              EmailService emailService) {
+                              JdbcTemplate jdbcTemplate) {
         this.transactionRepository = transactionRepository;
         this.ruleRepository = ruleRepository;
         this.alertService = alertService;
         this.jdbcTemplate = jdbcTemplate;
-        this.accountRepository = accountRepository;
-        this.emailService = emailService;
     }
 
     // Backwards-compatible constructor used by unit tests that only supply the
@@ -60,8 +49,6 @@ public class TransactionService {
         this.ruleRepository = null;
         this.alertService = null;
         this.jdbcTemplate = null;
-        this.accountRepository = null;
-        this.emailService = null;
     }
 
     /**
@@ -117,13 +104,6 @@ public class TransactionService {
         // Persist transaction and then create alerts for any triggered rules
         saved = transactionRepository.save(t);
 
-        // log how many rules triggered (helpful for debugging why email may not be sent)
-        org.slf4j.Logger _log = org.slf4j.LoggerFactory.getLogger(TransactionService.class);
-        _log.info("TransactionService: {} rule(s) triggered for transaction {}", triggered.size(), saved.getTransactionId());
-
-        // logger
-        org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(TransactionService.class);
-
         for (var tr : triggered) {
             // Map RuleSeverity -> AlertSeverity (same enum names)
             com.neueda.transaction_monitor.model.Alert.AlertSeverity sev =
@@ -132,44 +112,6 @@ public class TransactionService {
             // Create alert using AlertService DTO
             CreateAlertRequest req = new CreateAlertRequest(tr.ruleId(), Long.valueOf(saved.getTransactionId()), sev);
             alertService.createAlert(req);
-
-            // Send email for HIGH/CRITICAL
-            if ((sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.HIGH ||
-                 sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.CRITICAL) &&
-                accountRepository != null && emailService != null) {
-
-                accountRepository.findById(saved.getAccountId()).ifPresent(acc -> {
-                    String to = acc.getEmail();
-                    if (to != null && !to.isBlank()) {
-                        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm a", Locale.ENGLISH);
-                        NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
-                        String formattedDate = saved.getTimeStamp().format(dtf);
-                        String formattedAmount = nf.format(saved.getAmount());
-
-                        String subject = String.format("%s Notification from HAWK", sev.name());
-
-                        StringBuilder body = new StringBuilder();
-                        body.append("Dear Customer,\n\n");
-                        body.append("We detected a transaction on your account that has been flagged for review by our monitoring system.\n\n");
-                        body.append("Transaction Details\n");
-                        body.append("------------------------------------------------------------\n");
-                        body.append(String.format("Transaction ID : TXN-%d\n", saved.getTransactionId()));
-                        body.append(String.format("Date & Time    : %s\n", formattedDate));
-                        body.append(String.format("Amount         : %s\n", formattedAmount));
-                        body.append(String.format("Status         : Under Review\n"));
-                        body.append(String.format("Severity       : %s\n\n", sev.name()));
-                        body.append("Why are you receiving this email?\n");
-                        body.append("Our monitoring system identified this transaction as unusual based on our security checks. This does not necessarily mean the transaction is fraudulent, but we recommend reviewing it as soon as possible.\n\n");
-                        body.append("Kind regards,\n\n");
-                        body.append("Transaction Monitoring & Alert Management Team");
-
-                        log.info("Queuing alert email to {} for transaction {} severity {}", to, saved.getTransactionId(), sev);
-                        emailService.sendAlertEmail(to, subject, body.toString());
-                    } else {
-                        log.info("Account {} has no email configured — skipping alert email", acc.getAccountId());
-                    }
-                });
-            }
         }
 
         return saved;
@@ -188,6 +130,13 @@ public class TransactionService {
      */
     public List<Transaction> getTransactionsByAccount(int accountId) {
         return transactionRepository.findByAccountId(accountId);
+    }
+
+    /**
+     * Returns all transactions, most recent first.
+     */
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
     }
 
     /**

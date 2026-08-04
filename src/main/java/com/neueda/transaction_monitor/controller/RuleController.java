@@ -2,6 +2,7 @@ package com.neueda.transaction_monitor.controller;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -64,7 +65,7 @@ public class RuleController {
 
     @PutMapping("/{ruleId}")
     public ResponseEntity<ApiResponse<RuleResponse>> updateRule(
-        @PathVariable Long ruleId, @RequestBody UpdateRuleRequest request
+        @PathVariable Long ruleId, @Valid @RequestBody UpdateRuleRequest request
     ) {
         return ResponseEntity.ok(ApiResponse.success("Rule updated", ruleEngineService.updateRule(ruleId, request)));
     }
@@ -92,8 +93,17 @@ public class RuleController {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ErrorResponse.of(ex.getMessage()));
     }
 
-    @ExceptionHandler({ IllegalArgumentException.class, MethodArgumentNotValidException.class })
-    public ResponseEntity<ErrorResponse> handleBadRequest(Exception ex) {
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().stream()
+            .map(fe -> fe.getDefaultMessage())
+            .distinct()
+            .collect(Collectors.joining(" | "));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(message));
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleBadRequest(IllegalArgumentException ex) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(ex.getMessage()));
     }
 

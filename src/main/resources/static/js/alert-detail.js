@@ -21,6 +21,9 @@ document.addEventListener("DOMContentLoaded", () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ status: nextStatus }),
     });
+    if (nextStatus === "CLOSED" || nextStatus === "DISMISSED") {
+      window.HawkUI.clearAlertNotification(id);
+    }
     await load();
     window.HawkUI.showToast(`Alert moved to ${nextStatus}`);
   }
@@ -51,6 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.HawkUI.showLoader();
     const a = await window.HawkUI.apiRequest(`/api/v1/alerts/${id}`);
     window.HawkUI.hideLoader();
+    window.HawkUI.syncAlertNotificationState([a]);
     title.textContent = `Alert #${a.alertId}`;
     statusEl.innerHTML = `<span class="badge ${window.HawkUI.statusClass(a.status)}">${a.status}</span>`;
     severityEl.innerHTML = `<span class="badge ${window.HawkUI.statusClass(a.severity)}">${a.severity}</span>`;
@@ -67,4 +71,3 @@ document.addEventListener("DOMContentLoaded", () => {
     window.HawkUI.showToast(err.message);
   });
 });
-
