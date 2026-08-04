@@ -1,5 +1,6 @@
 package com.neueda.transaction_monitor.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -22,9 +23,10 @@ public class RuleEngineService {
     }
 
     public RuleResponse createRule(CreateRuleRequest request) {
+        validateRuleFields(request.ruleType(), request.threshold(), request.timeWindow());
         Rule rule = ruleRepository.create(
-            request.ruleName(), request.ruleType(), request.severity(),
-            request.threshold(), request.timeWindow()
+                request.ruleName(), request.ruleType(), request.severity(),
+                request.threshold(), request.timeWindow()
         );
         return toResponse(rule);
     }
@@ -38,11 +40,15 @@ public class RuleEngineService {
     }
 
     public RuleResponse updateRule(Long ruleId, UpdateRuleRequest request) {
-        // ensure rule exists before update
-        getOrThrow(ruleId);
+        Rule existing = getOrThrow(ruleId);
+        // validate updated threshold/timeWindow if provided
+        BigDecimal threshold = request.threshold() != null ? request.threshold() : existing.getThreshold();
+        Integer timeWindow   = request.timeWindow()  != null ? request.timeWindow()  : existing.getTimeWindow();
+        validateRuleFields(existing.getRuleType(), threshold, timeWindow);
+
         Rule updated = ruleRepository.update(
-            ruleId, request.ruleName(), request.severity(),
-            request.threshold(), request.timeWindow(), request.activeStatus()
+                ruleId, request.ruleName(), request.severity(),
+                request.threshold(), request.timeWindow(), request.activeStatus()
         );
         return toResponse(updated);
     }
@@ -64,17 +70,65 @@ public class RuleEngineService {
         ruleRepository.delete(ruleId);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
+    // ── Validation ────────────────────────────────────────────────────────────
+
+    /**
+     * Enforces per-rule-type field requirements:
+     *
+     * THRESHOLD   — threshold required and > 0
+     * DAILY_LIMIT — threshold required and > 0
+     * VELOCITY    — threshold (max tx count) required + timeWindow (minutes) required
+     * NEW_PAYEE   — no threshold or timeWindow needed
+     */
+    private void validateRuleFields(RuleType type, BigDecimal threshold, Integer timeWindow) {
+        switch (type) {
+            case THRESHOLD -> {
+                if (threshold == null)
+                    throw new IllegalArgumentException(
+                            "Threshold value is required");
+                if (threshold.compareTo(BigDecimal.ZERO) <= 0)
+                    throw new IllegalArgumentException(
+                            "Threshold must be greater than zero");
+            }
+            case DAILY_LIMIT -> {
+                if (threshold == null)
+                    throw new IllegalArgumentException(
+                            "Daily limit value is required");
+                if (threshold.compareTo(BigDecimal.ZERO) <= 0)
+                    throw new IllegalArgumentException(
+                            "Threshold must be greater than zero");
+            }
+            case VELOCITY -> {
+                if (threshold == null)
+                    throw new IllegalArgumentException(
+                            "Threshold value is required");
+                if (threshold.compareTo(BigDecimal.ZERO) <= 0)
+                    throw new IllegalArgumentException(
+                            "Threshold must be greater than zero");
+                if (timeWindow == null)
+                    throw new IllegalArgumentException(
+                            "Time window value is required");
+                if (timeWindow < 1)
+                    throw new IllegalArgumentException(
+                            "Time window must be at least 1 minute");
+            }
+            case NEW_PAYEE -> {
+                // no fields required for new payee detection
+            }
+        }
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
 
     private Rule getOrThrow(Long ruleId) {
         return ruleRepository.findById(ruleId)
-            .orElseThrow(() -> new NoSuchElementException("Rule not found: " + ruleId));
+                .orElseThrow(() -> new NoSuchElementException("Rule not found: " + ruleId));
     }
 
     private RuleResponse toResponse(Rule rule) {
         return new RuleResponse(
-            rule.getRuleId(), rule.getRuleName(), rule.getRuleType(),
-            rule.getSeverity(), rule.getThreshold(), rule.getTimeWindow(), rule.getActiveStatus()
+                rule.getRuleId(), rule.getRuleName(), rule.getRuleType(),
+                rule.getSeverity(), rule.getThreshold(), rule.getTimeWindow(), rule.getActiveStatus()
         );
     }
 }
