@@ -203,6 +203,18 @@ input:focus, select:focus, textarea:focus {
 }
 input::placeholder, textarea::placeholder { color: #BBBBBB; font-size: 0.85rem; }
 
+/* Inline field error under inputs */
+.field-error {
+  color: var(--hawk-red);
+  font-size: 0.85rem;
+  margin-top: 6px;
+  font-weight: 600;
+}
+.input-error {
+  border-color: var(--hawk-red) !important;
+  box-shadow: 0 0 0 3px rgba(219,0,17,0.06) !important;
+}
+
 /* ---- Buttons -------------------------------------------- */
 button {
   border: 1px solid transparent;
@@ -223,6 +235,17 @@ button {
 .btn-secondary:hover { border-color: var(--hawk-red); color: var(--hawk-red); }
 .btn-ghost { background: transparent; color: var(--hawk-grey); border-color: var(--hawk-border); }
 .btn-ghost:hover { background: var(--hawk-grey-light); color: var(--hawk-black); }
+.btn-danger {
+  background: var(--hawk-white);
+  color: var(--hawk-red);
+  border-color: var(--hawk-red);
+}
+.btn-danger:hover {
+  background: var(--hawk-red);
+  color: var(--hawk-white);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(219,0,17,0.20);
+}
 
 /* ---- Badges --------------------------------------------- */
 .badge {
@@ -257,20 +280,112 @@ button {
 }
 .footer-note { margin-top: 28px; font-size: 0.8rem; color: var(--hawk-grey); text-align: center; }
 
+/* ---- Rules Page ------------------------------------------- */
+#ruleForm {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  align-items: end;
+}
+
+#ruleForm input,
+#ruleForm select,
+#ruleForm button {
+  width: 100%;
+  min-height: 42px;
+}
+
+#ruleForm button {
+  white-space: nowrap;
+}
+
+.table-wrap table td,
+.table-wrap table th {
+  vertical-align: middle;
+}
+
+.rule-actions-cell {
+  min-width: 220px;
+}
+
+.rule-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rule-actions button {
+  min-width: 95px;
+  text-align: center;
+}
+
 /* ---- Toast ---------------------------------------------- */
 #errorBox, #toast { display: none; }
 #toast {
   position: fixed;
-  right: 20px; bottom: 20px;
-  background: var(--hawk-black);
-  color: var(--hawk-white);
-  padding: 12px 18px;
-  border-left: 4px solid var(--hawk-red);
-  border-radius: var(--radius-sm);
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+  background: var(--hawk-white);
+  color: var(--hawk-red);
+  padding: 16px 24px;
+  border: 2px solid var(--hawk-red);
+  border-left: 6px solid var(--hawk-red);
+  border-radius: 10px;
   z-index: 9990;
-  font-size: 0.88rem;
-  box-shadow: var(--hawk-shadow);
+  font-size: 0.95rem;
+  font-weight: 600;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+  text-align: center;
+  min-width: 280px;
+  max-width: 420px;
   animation: fadeInUp 0.25s ease;
+}
+
+/* ---- Confirmation Modal ----------------------------------- */
+.hawk-confirm-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  z-index: 9998;
+  align-items: center;
+  justify-content: center;
+}
+
+.hawk-confirm-card {
+  width: 100%;
+  max-width: 420px;
+  margin: 0 16px;
+  background: var(--hawk-white);
+  border: 2px solid var(--hawk-red);
+  border-radius: 12px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+  padding: 24px;
+  text-align: center;
+}
+
+.hawk-confirm-card h3 {
+  margin: 0 0 10px;
+  color: var(--hawk-red);
+  font-size: 1.2rem;
+}
+
+.hawk-confirm-card p {
+  margin: 0 0 18px;
+  color: var(--hawk-black);
+  font-size: 0.95rem;
+}
+
+.hawk-confirm-actions {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 /* ============================================================

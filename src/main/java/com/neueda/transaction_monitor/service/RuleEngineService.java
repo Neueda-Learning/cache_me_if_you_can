@@ -85,7 +85,7 @@ public class RuleEngineService {
             case THRESHOLD -> {
                 if (threshold == null)
                     throw new IllegalArgumentException(
-                            "Threshold value is required");
+                            "Threshold is required");
                 if (threshold.compareTo(BigDecimal.ZERO) <= 0)
                     throw new IllegalArgumentException(
                             "Threshold must be greater than zero");
@@ -93,21 +93,21 @@ public class RuleEngineService {
             case DAILY_LIMIT -> {
                 if (threshold == null)
                     throw new IllegalArgumentException(
-                            "Daily limit value is required");
+                            "Daily limit is required");
                 if (threshold.compareTo(BigDecimal.ZERO) <= 0)
                     throw new IllegalArgumentException(
-                            "Threshold must be greater than zero");
+                            "Daily limit must be greater than zero");
             }
             case VELOCITY -> {
                 if (threshold == null)
                     throw new IllegalArgumentException(
-                            "Threshold value is required");
+                            "Threshold is required");
                 if (threshold.compareTo(BigDecimal.ZERO) <= 0)
                     throw new IllegalArgumentException(
                             "Threshold must be greater than zero");
                 if (timeWindow == null)
                     throw new IllegalArgumentException(
-                            "Time window value is required");
+                            "Time window must be at least 1 minute");
                 if (timeWindow < 1)
                     throw new IllegalArgumentException(
                             "Time window must be at least 1 minute");

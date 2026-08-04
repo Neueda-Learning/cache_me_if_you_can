@@ -96,7 +96,8 @@ public class RuleController {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(MethodArgumentNotValidException ex) {
         String message = ex.getBindingResult().getFieldErrors().stream()
-            .map(fe -> fe.getField() + ": " + fe.getDefaultMessage())
+            .map(fe -> fe.getDefaultMessage())
+            .distinct()
             .collect(Collectors.joining(" | "));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.of(message));
     }
