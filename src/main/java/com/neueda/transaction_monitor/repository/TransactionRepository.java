@@ -2,6 +2,8 @@ package com.neueda.transaction_monitor.repository;
 
 import com.neueda.transaction_monitor.model.AccountSummary;
 import com.neueda.transaction_monitor.model.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -15,6 +17,8 @@ import java.util.Optional;
 
 @Repository
 public class TransactionRepository {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionRepository.class);
 
     private final JdbcTemplate jdbcTemplate;
 

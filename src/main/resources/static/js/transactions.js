@@ -1,31 +1,44 @@
 document.addEventListener("DOMContentLoaded", () => {
   const tbody = document.getElementById("txBody");
   const filterForm = document.getElementById("txFilters");
+  const filterByEl = document.getElementById("filterBy");
+  const filterValueEl = document.getElementById("filterValue");
+  const fromEl = document.getElementById("from");
+  const toEl = document.getElementById("to");
   const stats = {
     count: document.getElementById("statCount"),
     volume: document.getElementById("statVolume"),
   };
 
+  function toEpoch(value) {
+    if (!value) return null;
+    const t = new Date(value).getTime();
+    return Number.isNaN(t) ? null : t;
+  }
+
+  function inDateRange(txTimeStamp, from, to) {
+    const ts = toEpoch(txTimeStamp);
+    if (ts === null) return true;
+    const fromTs = toEpoch(from);
+    const toTs = toEpoch(to);
+    if (fromTs !== null && ts < fromTs) return false;
+    if (toTs !== null && ts > toTs) return false;
+    return true;
+  }
+
   async function loadTransactions() {
     window.HawkUI.showLoader();
-    const accountId = document.getElementById("accountId").value.trim();
-    const from = document.getElementById("from").value;
-    const to = document.getElementById("to").value;
+    const filterBy = (filterByEl?.value || "ALL").trim();
+    const filterValue = (filterValueEl?.value || "").trim();
+    const from = fromEl?.value || "";
+    const to = toEl?.value || "";
 
-    let data;
-    if (accountId) {
-      data = await window.HawkUI.apiRequest(`/api/transactions/account/${encodeURIComponent(accountId)}`);
-    } else if (from && to) {
-      data = await window.HawkUI.apiRequest(`/api/transactions/range?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}`);
-    } else {
-      const now = window.HawkUI.nowLocalIsoNoZone();
-      const d = new Date();
-      d.setDate(d.getDate() - 7);
-      const start = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}T00:00:00`;
-      data = await window.HawkUI.apiRequest(`/api/transactions/range?from=${start}&to=${now}`);
-    }
+    const params = new URLSearchParams();
+    if (filterBy) params.set("filterBy", filterBy);
+    if (filterValue) params.set("value", filterValue);
 
-    const rows = Array.isArray(data) ? data : [];
+    const data = await window.HawkUI.apiRequest(`/api/transactions/list?${params.toString()}`);
+    const rows = (Array.isArray(data) ? data : []).filter((tx) => inDateRange(tx.timeStamp, from, to));
     window.HawkUI.hideLoader();
 
     tbody.innerHTML = "";
@@ -39,8 +52,8 @@ document.addEventListener("DOMContentLoaded", () => {
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${tx.transactionId ?? "-"}</td>
-        <td>${tx.accountId}</td>
-        <td>${tx.payeeId}</td>
+        <td>${tx.accountNumber || "-"}</td>
+        <td>${tx.payeeAccountNumber || "-"}</td>
         <td>${window.HawkUI.fmtAmount(tx.amount)}</td>
         <td>${tx.transactionType || "-"}</td>
         <td>${window.HawkUI.fmtDate(tx.timeStamp)}</td>
@@ -65,6 +78,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
   document.getElementById("btnClear").addEventListener("click", () => {
     filterForm.reset();
+    loadTransactions().catch((err) => {
+      window.HawkUI.hideLoader();
+      window.HawkUI.showToast(err.message);
+    });
   });
 
   loadTransactions().catch((err) => {

@@ -7,7 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
@@ -27,7 +26,9 @@ import java.util.stream.Collectors;
  *   "message": "Transaction not found with ID: 99"
  * }
  */
-@RestControllerAdvice
+// Disabled to avoid duplicate advice bean name with
+// com.neueda.transaction_monitor.exception.GlobalExceptionHandler.
+// Keep class for reference only.
 public class GlobalExceptionHandler {
 
     // ── Domain Exceptions ──────────────────────────────────────────────────────
