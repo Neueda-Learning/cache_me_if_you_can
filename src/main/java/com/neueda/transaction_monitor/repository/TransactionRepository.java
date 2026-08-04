@@ -85,6 +85,14 @@ public class TransactionRepository {
     }
 
     /**
+     * Returns all transactions, most recent first.
+     */
+    public List<Transaction> findAll() {
+        String sql = "SELECT * FROM TRANSACTION_TABLE ORDER BY Time_Stamp DESC";
+        return jdbcTemplate.query(sql, transactionRowMapper);
+    }
+
+    /**
      * Returns transactions whose Time_Stamp falls within the given range (inclusive).
      */
     public List<Transaction> findByTimeWindow(LocalDateTime from, LocalDateTime to) {

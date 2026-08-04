@@ -227,4 +227,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   } finally {
     window.HawkUI.hideLoader();
   }
+
+  const closeBtn   = document.getElementById("alertPopupClose");
+  const dismissBtn = document.getElementById("alertPopupDismiss");
+  const alertPopup = document.getElementById("alertPopup");
+  if (closeBtn)   closeBtn.addEventListener("click", () => { alertPopup.style.display = "none"; });
+  if (dismissBtn) dismissBtn.addEventListener("click", () => { alertPopup.style.display = "none"; });
+  if (alertPopup) alertPopup.addEventListener("click", (e) => { if (e.target === alertPopup) alertPopup.style.display = "none"; });
 });

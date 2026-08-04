@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HAWK | Client Login</title>
+  <title>HAWK | Administrator Login</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script defer src="/js/common.js"></script>
   <script defer src="/js/auth-pages.js"></script>
@@ -14,23 +14,23 @@
     <a href="/">
       <img src="/images/HAWK.png" alt="HAWK" class="auth-logo">
     </a>
-    <h1>Client Login</h1>
-    <p class="auth-desc">Sign in to access the HAWK monitoring platform.</p>
+    <h1>Administrator Login</h1>
+    <p class="auth-desc">Sign in as administrator to access the HAWK monitoring platform.</p>
 
     <form id="loginForm" class="auth-form">
       <div class="form-group">
         <label for="username">Username</label>
-        <input id="username" type="text" required placeholder="e.g. john.smith">
+        <input id="username" type="text" required placeholder="e.g. admin">
       </div>
       <div class="form-group">
         <label for="password">Password</label>
         <input id="password" type="password" placeholder="Enter your password">
       </div>
+      <p id="loginError" style="color:#DB0011;font-size:0.82rem;margin:0 0 8px;display:none;"></p>
       <button class="btn-primary" type="submit" style="margin-top:4px;">Sign In</button>
     </form>
 
     <div class="auth-footer">
-      <div>Don't have an account? <a href="/signup.html">Create Account</a></div>
       <div><a href="/">← Back to Home</a></div>
     </div>
   </section>

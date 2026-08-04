@@ -10,6 +10,7 @@ import com.neueda.transaction_monitor.service.AlertService;
 import com.neueda.transaction_monitor.rule.AmountThresholdRule;
 import com.neueda.transaction_monitor.rule.DailyLimitRule;
 import com.neueda.transaction_monitor.rule.NewPayeeRule;
+import com.neueda.transaction_monitor.rule.Velocity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -88,10 +89,11 @@ public class TransactionService {
         for (var ruleDef : activeRules) {
             com.neueda.transaction_monitor.rule.Rule ruleImpl = null;
             switch (ruleDef.getRuleType()) {
-                case THRESHOLD -> ruleImpl = new AmountThresholdRule(ruleDef);
+                case THRESHOLD   -> ruleImpl = new AmountThresholdRule(ruleDef);
                 case DAILY_LIMIT -> ruleImpl = new DailyLimitRule(ruleDef, jdbcTemplate);
-                case NEW_PAYEE -> ruleImpl = new NewPayeeRule(ruleDef, jdbcTemplate);
-                default -> ruleImpl = null; // unsupported/placeholder
+                case NEW_PAYEE   -> ruleImpl = new NewPayeeRule(ruleDef, jdbcTemplate);
+                case VELOCITY    -> ruleImpl = new Velocity(ruleDef, jdbcTemplate);
+                default          -> ruleImpl = null;
             }
 
             if (ruleImpl != null && ruleImpl.evaluate(t)) {
@@ -128,6 +130,13 @@ public class TransactionService {
      */
     public List<Transaction> getTransactionsByAccount(int accountId) {
         return transactionRepository.findByAccountId(accountId);
+    }
+
+    /**
+     * Returns all transactions, most recent first.
+     */
+    public List<Transaction> getAllTransactions() {
+        return transactionRepository.findAll();
     }
 
     /**
