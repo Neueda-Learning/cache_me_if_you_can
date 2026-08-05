@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
       window.HawkUI.hideLoader();
       tbody.innerHTML = "";
       if (rows.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:var(--hawk-grey);padding:20px;">No accounts registered yet. Add one above.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--hawk-grey);padding:20px;">No accounts registered yet. Add one above.</td></tr>`;
         return;
       }
       rows.forEach((a) => {
@@ -18,8 +18,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <td><strong>#${a.accountId}</strong></td>
           <td><code>${a.accountNumber}</code></td>
           <td>${a.accountHolderName}</td>
+          <td>${a.email || "-"}</td>
           <td>₹${window.HawkUI.fmtAmount(a.balance)}</td>
           <td>${window.HawkUI.fmtDate(a.createdAt)}</td>
+          <td><a class="btn-ghost" href="/account-summary.html?accountId=${encodeURIComponent(a.accountId)}">Account Summary</a></td>
         `;
         tbody.appendChild(tr);
       });
@@ -33,11 +35,12 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
     const holderName  = document.getElementById("accHolder").value.trim();
     const accNumber   = document.getElementById("accNumber").value.trim();
+    const email       = document.getElementById("accEmail").value.trim();
     const balance     = parseFloat(document.getElementById("accBalance").value || "0");
     try {
       await window.HawkUI.apiRequest("/api/accounts", {
         method: "POST",
-        body: JSON.stringify({ accountHolderName: holderName, accountNumber: accNumber, balance })
+        body: JSON.stringify({ accountHolderName: holderName, accountNumber: accNumber, email, balance })
       });
       window.HawkUI.showToast("✅ Account registered successfully.");
       e.target.reset();

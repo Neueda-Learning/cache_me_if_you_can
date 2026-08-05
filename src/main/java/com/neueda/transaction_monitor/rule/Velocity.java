@@ -1,8 +1,5 @@
 package com.neueda.transaction_monitor.rule;
 
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 
 import com.neueda.transaction_monitor.model.Transaction;
@@ -41,16 +38,12 @@ public class Velocity implements Rule {
             return false;
         }
 
-        LocalDateTime windowStart = LocalDateTime.now().minusMinutes(ruleDefinition.getTimeWindow());
-        LocalDateTime now         = LocalDateTime.now();
-
         Long count = jdbcTemplate.queryForObject(
             "SELECT COUNT(*) FROM TRANSACTION_TABLE " +
-            "WHERE Account_ID = ? AND Time_Stamp BETWEEN ? AND ?",
+            "WHERE Account_ID = ? AND Time_Stamp BETWEEN DATE_SUB(NOW(), INTERVAL ? MINUTE) AND NOW()",
             Long.class,
             transaction.getAccountId(),
-            Timestamp.valueOf(windowStart),
-            Timestamp.valueOf(now)
+            ruleDefinition.getTimeWindow()
         );
 
         long txCount = count != null ? count : 0L;

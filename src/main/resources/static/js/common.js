@@ -75,6 +75,14 @@
     return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   }
 
+  function fmtAmountCompact(amount) {
+    const n = Number(amount || 0);
+    if (n >= 10000000) return (n / 10000000).toFixed(2).replace(/\.?0+$/, "") + " Cr";
+    if (n >= 100000) return (n / 100000).toFixed(2).replace(/\.?0+$/, "") + " L";
+    if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.?0+$/, "") + " K";
+    return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
   function fmtDate(input) {
     if (!input) return "-";
     const d = new Date(input);
@@ -453,6 +461,7 @@
     hideLoader,
     statusClass,
     fmtAmount,
+    fmtAmountCompact,
     fmtDate,
     nowLocalIsoNoZone,
     showToast,

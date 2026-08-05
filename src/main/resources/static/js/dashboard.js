@@ -177,7 +177,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("kpiTx").textContent = String(todayArr.length);
     document.getElementById("kpiAlerts").textContent = String(allArr.length);
     const vol = todayArr.reduce((s, t) => s + Number(t.amount || 0), 0);
-    document.getElementById("kpiVolume").textContent = "₹" + window.HawkUI.fmtAmount(vol);
+    document.getElementById("kpiVolume").textContent = "₹" + window.HawkUI.fmtAmountCompact(vol);
 
     const statusCounts = countBy(allArr, "status");
     const statusLabels = ["OPEN", "ACKNOWLEDGED", "INVESTIGATING", "CLOSED", "DISMISSED"];

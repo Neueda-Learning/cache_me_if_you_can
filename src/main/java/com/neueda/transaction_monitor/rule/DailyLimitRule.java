@@ -1,9 +1,6 @@
 package com.neueda.transaction_monitor.rule;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -37,16 +34,11 @@ public class DailyLimitRule implements Rule {
     public boolean evaluate(Transaction transaction) {
         if (ruleDefinition.getThreshold() == null) return false;
 
-        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
-        LocalDateTime now        = LocalDateTime.now();
-
         BigDecimal todaySpend = jdbcTemplate.queryForObject(
             "SELECT COALESCE(SUM(Amount), 0) FROM TRANSACTION_TABLE " +
-            "WHERE Account_ID = ? AND Time_Stamp BETWEEN ? AND ?",
+            "WHERE Account_ID = ? AND Time_Stamp BETWEEN CURRENT_DATE() AND NOW()",
             BigDecimal.class,
-            transaction.getAccountId(),
-            Timestamp.valueOf(startOfDay),
-            Timestamp.valueOf(now)
+            transaction.getAccountId()
         );
 
         if (todaySpend == null) todaySpend = BigDecimal.ZERO;

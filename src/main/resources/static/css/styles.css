@@ -161,7 +161,7 @@ a:hover { color: var(--hawk-red); }
   letter-spacing: 1px;
   font-weight: 600;
 }
-.kpi-value { margin-top: 8px; font-size: 2rem; font-weight: 800; color: var(--hawk-black); line-height: 1; }
+.kpi-value { margin-top: 8px; font-size: clamp(0.9rem, 2.2vw, 2rem); font-weight: 800; color: var(--hawk-black); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .kpi-value.red { color: var(--hawk-red); }
 
 /* ---- Tables --------------------------------------------- */

@@ -46,9 +46,17 @@ public class TransactionMonitorApplication {
 					"WHERE ( p_filter_by = 'ALL' OR (p_filter_by = 'TXN' AND t.Transaction_ID = CAST(p_value AS UNSIGNED)) OR (p_filter_by = 'ACCOUNT' AND a.Account_Number = p_value) OR (p_filter_by = 'PAYEE' AND p.Payee_Account_Number = p_value) ) " +
 					"ORDER BY t.Time_Stamp DESC; END";
 				st.execute(proc);
+
+				st.execute("DROP PROCEDURE IF EXISTS GetAccountSummary");
+				String accountSummaryProc = "CREATE PROCEDURE GetAccountSummary(IN p_account_id INT) BEGIN " +
+					"SELECT p_account_id AS Account_ID, COUNT(*) AS total_transactions, COALESCE(SUM(Amount), 0) AS total_amount " +
+					"FROM TRANSACTION_TABLE WHERE Account_ID = p_account_id; END";
+				st.execute(accountSummaryProc);
+
 				log.info("Stored procedure GetTransactionList created/updated");
+				log.info("Stored procedure GetAccountSummary created/updated");
 			} catch (SQLException e) {
-				log.warn("Could not create stored procedure GetTransactionList: {}", e.getMessage());
+				log.warn("Could not create stored procedures: {}", e.getMessage());
 			}
 		};
 	}

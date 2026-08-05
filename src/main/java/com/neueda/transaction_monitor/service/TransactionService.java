@@ -14,6 +14,7 @@ import com.neueda.transaction_monitor.rule.Velocity;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -66,6 +67,7 @@ public class TransactionService {
      * Validates and persists a new transaction.
      * Throws IllegalArgumentException for bad input — caught by GlobalExceptionHandler.
      */
+    @Transactional
     public Transaction createTransaction(Transaction t) {
         if (t.getAccountId() == null || t.getAccountId() <= 0) {
             throw new IllegalArgumentException("Account ID must be positive");
@@ -80,6 +82,18 @@ public class TransactionService {
             throw new IllegalArgumentException("Transaction type must be one of: TRANSFER, PAYMENT, WITHDRAWAL");
         }
         t.setTransactionType(t.getTransactionType().toUpperCase());
+
+        // Validate sender account exists, then debit atomically to avoid race conditions.
+        if (accountRepository != null) {
+            var acctOpt = accountRepository.findById(t.getAccountId());
+            if (acctOpt.isEmpty()) {
+                throw new IllegalArgumentException("Account with ID " + t.getAccountId() + " not found");
+            }
+            boolean debited = accountRepository.debitIfSufficientBalance(t.getAccountId(), t.getAmount());
+            if (!debited) {
+                throw new IllegalArgumentException("Insufficient balance for this transaction");
+            }
+        }
 
         Transaction saved;
 
@@ -114,6 +128,7 @@ public class TransactionService {
 
         // Persist transaction and then create alerts for any triggered rules
         saved = transactionRepository.save(t);
+
 
         for (var tr : triggered) {
             // Map RuleSeverity -> AlertSeverity (same enum names)

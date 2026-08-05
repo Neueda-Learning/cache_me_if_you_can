@@ -32,18 +32,37 @@ public class AccountRepository {
     }
 
     public Account save(Account account) {
-        String sql = "INSERT INTO ACCOUNT (Account_Number, Account_Holder_Name, Balance) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO ACCOUNT (Account_Number, Account_Holder_Name, Balance, Email) VALUES (?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setString(1, account.getAccountNumber());
             ps.setString(2, account.getAccountHolderName());
             ps.setBigDecimal(3, account.getBalance() != null ? account.getBalance() : BigDecimal.ZERO);
+            ps.setString(4, account.getEmail());
             return ps;
         }, keyHolder);
         Number key = keyHolder.getKey();
         if (key == null) throw new IllegalStateException("Failed to create account");
         return findById(key.intValue()).orElseThrow();
+    }
+
+    public void updateBalance(Integer accountId, BigDecimal newBalance) {
+        jdbcTemplate.update(
+            "UPDATE ACCOUNT SET Balance = ? WHERE Account_ID = ?",
+            newBalance,
+            accountId
+        );
+    }
+
+    public boolean debitIfSufficientBalance(Integer accountId, BigDecimal amount) {
+        int updated = jdbcTemplate.update(
+            "UPDATE ACCOUNT SET Balance = Balance - ? WHERE Account_ID = ? AND Balance >= ?",
+            amount,
+            accountId,
+            amount
+        );
+        return updated > 0;
     }
 
     private RowMapper<Account> rowMapper() {

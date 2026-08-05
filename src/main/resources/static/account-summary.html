@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HAWK | Accounts</title>
+  <title>HAWK | Account Summary</title>
   <link rel="stylesheet" href="/css/styles.css">
   <script defer src="/js/common.js"></script>
-  <script defer src="/js/accounts.js"></script>
+  <script defer src="/js/account-summary.js"></script>
 </head>
 <body>
 
@@ -37,36 +37,43 @@
     </aside>
 
     <main class="main">
-      <h1 class="page-title">Account Management</h1>
-      <p class="page-subtitle">Register sender accounts. Each transaction references an Account ID from this list.</p>
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <h1 class="page-title" style="margin-bottom:6px;">Account Summary</h1>
+          <p id="summarySubtitle" class="page-subtitle">Detailed view of transactions and alerts for this account.</p>
+        </div>
+        <a class="btn-ghost" href="/accounts.html">Back to Accounts</a>
+      </div>
 
-      <!-- Add Account Form -->
-      <section class="card" style="margin-bottom:16px;">
-        <h2 style="margin:0 0 16px;font-size:1rem;font-weight:700;">Register New Account</h2>
-        <form id="accountForm" class="filters">
-          <input id="accHolder" required placeholder="Account Holder Name (e.g. Alice Sharma)">
-          <input id="accNumber" required placeholder="Account Number (12 digits)">
-          <input id="accEmail" type="email" placeholder="Account Email (for alerts)">
-          <input id="accBalance" type="number" step="0.01" min="0" placeholder="Opening Balance (₹)">
-          <button class="btn-primary" type="submit">+ Add Account</button>
-        </form>
+      <section class="grid grid-3" style="margin-bottom:16px;">
+        <article class="kpi-card">
+          <div class="kpi-label">Account ID</div>
+          <div id="sumAccountId" class="kpi-value">-</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Total Transactions</div>
+          <div id="sumTxCount" class="kpi-value">0</div>
+        </article>
+        <article class="kpi-card">
+          <div class="kpi-label">Total Amount Sent</div>
+          <div id="sumTotalAmount" class="kpi-value">₹0.00</div>
+        </article>
       </section>
 
-      <!-- Accounts Table -->
       <div class="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>Account ID</th>
-              <th>Account Number</th>
-              <th>Account Holder</th>
-              <th>Email</th>
-              <th>Balance (₹)</th>
-              <th>Created At</th>
-              <th>Action</th>
+              <th>Transaction ID</th>
+              <th>Payee</th>
+              <th>Payee Account</th>
+              <th>Amount (₹)</th>
+              <th>Type</th>
+              <th>Timestamp</th>
+              <th>Alerts Generated</th>
             </tr>
           </thead>
-          <tbody id="accountsBody"></tbody>
+          <tbody id="summaryBody"></tbody>
         </table>
       </div>
     </main>

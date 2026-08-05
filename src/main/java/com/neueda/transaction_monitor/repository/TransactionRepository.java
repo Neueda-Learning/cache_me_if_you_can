@@ -244,20 +244,7 @@ public class TransactionRepository {
 
     /**
      * Calls the stored procedure GetAccountSummary(accountId).
-     * This is the ONLY place a CallableStatement is used in the codebase.
-     *
-     * Prerequisite — run once manually in MySQL Workbench:
-     *
-     *   DELIMITER $$
-     *   CREATE PROCEDURE GetAccountSummary(IN p_account_id INT)
-     *   BEGIN
-     *       SELECT Account_ID,
-     *              COUNT(*)   AS total_transactions,
-     *              SUM(Amount) AS total_amount
-     *       FROM TRANSACTION_TABLE
-     *       WHERE Account_ID = p_account_id;
-     *   END$$
-     *   DELIMITER ;
+     * Procedure creation is handled automatically at application startup.
      */
     public AccountSummary getAccountTransactionSummary(int accountId) {
         return jdbcTemplate.execute(
