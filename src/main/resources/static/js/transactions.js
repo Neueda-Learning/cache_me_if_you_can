@@ -3,12 +3,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const filterForm = document.getElementById("txFilters");
   const filterByEl = document.getElementById("filterBy");
   const filterValueEl = document.getElementById("filterValue");
+  const suggestionListEl = document.getElementById("txFilterSuggestions");
   const fromEl = document.getElementById("from");
   const toEl = document.getElementById("to");
   const stats = {
     count: document.getElementById("statCount"),
     volume: document.getElementById("statVolume"),
   };
+  let allRowsCache = [];
 
   // Simple debounce to avoid firing too many requests while the user is typing
   function debounce(fn, wait) {
@@ -35,21 +37,53 @@ document.addEventListener("DOMContentLoaded", () => {
     return true;
   }
 
+  function rowMatchesFilter(tx, filterBy, filterValue) {
+    if (!filterValue || filterBy === "ALL") return true;
+    const needle = String(filterValue).toLowerCase();
+    if (filterBy === "transactionId") return String(tx.transactionId || "").toLowerCase().includes(needle);
+    if (filterBy === "accountNumber") return String(tx.accountNumber || "").toLowerCase().includes(needle);
+    if (filterBy === "payeeAccountNumber") return String(tx.payeeAccountNumber || "").toLowerCase().includes(needle);
+    return true;
+  }
+
+  function updateTypeaheadSuggestions() {
+    if (!suggestionListEl || !filterByEl || !filterValueEl) return;
+    const filterBy = filterByEl.value || "ALL";
+    const query = (filterValueEl.value || "").trim().toLowerCase();
+    const source = new Set();
+
+    if (filterBy === "transactionId") {
+      allRowsCache.forEach((row) => source.add(String(row.transactionId || "")));
+    } else if (filterBy === "accountNumber") {
+      allRowsCache.forEach((row) => source.add(String(row.accountNumber || "")));
+    } else if (filterBy === "payeeAccountNumber") {
+      allRowsCache.forEach((row) => source.add(String(row.payeeAccountNumber || "")));
+    }
+
+    const options = Array.from(source)
+      .filter((v) => v && (!query || v.toLowerCase().includes(query)))
+      .slice(0, 12)
+      .map((v) => `<option value="${v}"></option>`)
+      .join("");
+
+    suggestionListEl.innerHTML = options;
+  }
+
   async function loadTransactions() {
     window.HawkUI.showLoader();
     const filterBy = (filterByEl?.value || "ALL").trim();
     const filterValue = (filterValueEl?.value || "").trim();
-    // If user selected a specific filter but did not provide a value, treat as ALL
-    const effectiveFilterBy = (filterBy !== 'ALL' && !filterValue) ? 'ALL' : filterBy;
     const from = fromEl?.value || "";
     const to = toEl?.value || "";
 
-    const params = new URLSearchParams();
-    if (effectiveFilterBy) params.set("filterBy", effectiveFilterBy);
-    if (filterValue) params.set("value", filterValue);
+    // Use ALL + client-side contains-match so partial account/payee/id searches work.
+    const data = await window.HawkUI.apiRequest(`/api/transactions/list?filterBy=ALL&value=`);
+    allRowsCache = Array.isArray(data) ? data : [];
+    updateTypeaheadSuggestions();
 
-    const data = await window.HawkUI.apiRequest(`/api/transactions/list?${params.toString()}`);
-    const rows = (Array.isArray(data) ? data : []).filter((tx) => inDateRange(tx.timeStamp, from, to));
+    const rows = allRowsCache
+      .filter((tx) => rowMatchesFilter(tx, filterBy, filterValue))
+      .filter((tx) => inDateRange(tx.timeStamp, from, to));
     window.HawkUI.hideLoader();
 
     tbody.innerHTML = "";
@@ -95,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
       case 'transactionId':
         filterValueEl.placeholder = 'Enter Transaction ID';
         filterValueEl.style.display = '';
-        filterValueEl.type = 'number';
+        filterValueEl.type = 'text';
         break;
       case 'accountNumber':
         filterValueEl.placeholder = 'Enter Account Number';
@@ -110,8 +144,10 @@ document.addEventListener("DOMContentLoaded", () => {
       default:
         filterValueEl.style.display = 'none';
         filterValueEl.value = '';
+        if (suggestionListEl) suggestionListEl.innerHTML = '';
         break;
     }
+    updateTypeaheadSuggestions();
   }
 
   // Debounced loader used by interactive filter inputs
@@ -129,7 +165,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // When user types/selects a filter value or changes date range, fetch automatically
-  if (filterValueEl) filterValueEl.addEventListener('input', debouncedLoad);
+  if (filterValueEl) filterValueEl.addEventListener('input', () => {
+    updateTypeaheadSuggestions();
+    debouncedLoad();
+  });
   if (fromEl) fromEl.addEventListener('change', debouncedLoad);
   if (toEl) toEl.addEventListener('change', debouncedLoad);
   if (filterByEl) filterByEl.addEventListener('change', updateFilterInput);

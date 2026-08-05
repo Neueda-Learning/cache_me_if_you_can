@@ -60,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
   document.getElementById("alertFilters").addEventListener("submit", async (event) => {
     event.preventDefault();
     try {

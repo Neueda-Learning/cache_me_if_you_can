@@ -29,6 +29,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     },
   };
 
+  function parseTxDate(value) {
+    if (!value) return null;
+    const raw = String(value).trim();
+    const normalized = raw.includes("T") ? raw : raw.replace(" ", "T");
+    const d = new Date(normalized);
+    return Number.isNaN(d.getTime()) ? null : d;
+  }
+
   function countBy(arr, key) {
     return arr.reduce((acc, item) => {
       const k = item[key] || "UNKNOWN";
@@ -119,7 +127,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       counts[key] = 0;
     }
     (txList || []).forEach((tx) => {
-      const ds = tx.timeStamp ? String(tx.timeStamp).substring(0, 10) : null;
+      const t = parseTxDate(tx.timeStamp);
+      const ds = t
+        ? `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, "0")}-${String(t.getDate()).padStart(2, "0")}`
+        : null;
       if (ds && counts[ds] !== undefined) counts[ds]++;
     });
     return {
@@ -132,8 +143,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     const labels = Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, "0")}:00`);
     const data = Array(24).fill(0);
     (txList || []).forEach((tx) => {
-      const t = tx.timeStamp ? new Date(tx.timeStamp) : null;
-      if (t && !Number.isNaN(t.getTime())) data[t.getHours()] += 1;
+      const t = parseTxDate(tx.timeStamp);
+      if (t) data[t.getHours()] += 1;
     });
     return { labels, data };
   }
@@ -167,10 +178,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     const ms24 = 24 * 60 * 60 * 1000;
     const ms7 = 7 * 24 * 60 * 60 * 1000;
     const todayArr = allTxArr.filter((tx) => {
-      try { const t = new Date(tx.timeStamp); return !Number.isNaN(t.getTime()) && (nowMs - t.getTime()) <= ms24; } catch (_) { return false; }
+      try { const t = parseTxDate(tx.timeStamp); return !!t && (nowMs - t.getTime()) <= ms24; } catch (_) { return false; }
     });
     const tx7Arr = allTxArr.filter((tx) => {
-      try { const t = new Date(tx.timeStamp); return !Number.isNaN(t.getTime()) && (nowMs - t.getTime()) <= ms7; } catch (_) { return false; }
+      try { const t = parseTxDate(tx.timeStamp); return !!t && (nowMs - t.getTime()) <= ms7; } catch (_) { return false; }
     });
 
     document.getElementById("kpiOpen").textContent = String(openArr.length);
@@ -241,7 +252,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const closeBtn   = document.getElementById("alertPopupClose");
   const dismissBtn = document.getElementById("alertPopupDismiss");
   const alertPopup = document.getElementById("alertPopup");
-  if (closeBtn)   closeBtn.addEventListener("click", () => { alertPopup.style.display = "none"; });
-  if (dismissBtn) dismissBtn.addEventListener("click", () => { alertPopup.style.display = "none"; });
-  if (alertPopup) alertPopup.addEventListener("click", (e) => { if (e.target === alertPopup) alertPopup.style.display = "none"; });
+  if (closeBtn)   closeBtn.addEventListener("click", () => { if (alertPopup) window.HawkUI.closePopupOverlay(alertPopup); });
+  if (dismissBtn) dismissBtn.addEventListener("click", () => { if (alertPopup) window.HawkUI.closePopupOverlay(alertPopup); });
+  if (alertPopup) alertPopup.addEventListener("click", (e) => { if (e.target === alertPopup) window.HawkUI.closePopupOverlay(alertPopup); });
 });

@@ -98,12 +98,26 @@
   }
 
   /* ── Toast ─────────────────────────────────────────────── */
+  let toastTimer = null;
   function showToast(msg, duration) {
     const toast = document.getElementById("toast");
     if (!toast) return;
     toast.textContent = msg;
+    toast.classList.remove("hide");
     toast.style.display = "block";
-    setTimeout(() => { toast.style.display = "none"; }, duration || 2800);
+    // Force style flush so transition always runs when toasts appear repeatedly.
+    void toast.offsetWidth;
+    toast.classList.add("show");
+
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove("show");
+      toast.classList.add("hide");
+      setTimeout(() => {
+        toast.style.display = "none";
+        toast.classList.remove("hide");
+      }, 200);
+    }, duration || 2800);
   }
 
   /* ── Year ──────────────────────────────────────────────── */
@@ -301,16 +315,36 @@
 
   function hideAnyAlertPopup() {
     const popup = document.getElementById("alertPopup") || document.getElementById("globalAlertPopup");
-    if (popup) popup.style.display = "none";
+    if (!popup) return;
+    closePopupOverlay(popup);
+  }
+
+  function openPopupOverlay(overlay) {
+    if (!overlay) return;
+    overlay.classList.remove("is-closing");
+    overlay.style.display = "flex";
+    // Force style flush so opening animation is reliable.
+    void overlay.offsetWidth;
+    overlay.classList.add("is-open");
+  }
+
+  function closePopupOverlay(overlay) {
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    overlay.classList.add("is-closing");
+    setTimeout(() => {
+      overlay.classList.remove("is-closing");
+      overlay.style.display = "none";
+    }, 220);
   }
 
   function ensureGlobalAlertPopup() {
     if (document.getElementById("alertPopup") || document.getElementById("globalAlertPopup")) return;
     const overlay = document.createElement("div");
     overlay.id = "globalAlertPopup";
-    overlay.style.cssText = "display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8888;align-items:center;justify-content:center;";
+    overlay.className = "hawk-popup-overlay";
     overlay.innerHTML = `
-      <div style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
+      <div class="hawk-popup-card" style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
         <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
           <div style="display:flex;align-items:center;gap:10px;">
             <span style="font-size:1.5rem;">🚨</span>
@@ -329,7 +363,7 @@
       </div>`;
     document.body.appendChild(overlay);
 
-    const close = () => { overlay.style.display = "none"; };
+    const close = () => { closePopupOverlay(overlay); };
     document.getElementById("globalAlertPopupClose").addEventListener("click", close);
     document.getElementById("globalAlertPopupDismiss").addEventListener("click", close);
     overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
@@ -376,7 +410,7 @@
       </div>`).join("") +
       (alerts.length > 5 ? `<p style="font-size:0.8rem;color:#777;margin:10px 0 0;">…and ${alerts.length - 5} more.</p>` : "");
 
-    popup.overlay.style.display = "flex";
+    openPopupOverlay(popup.overlay);
 
     let blink = 0;
     const origTitle = document.title;
@@ -470,6 +504,8 @@
     getRole,
     syncAlertNotificationState,
     clearAlertNotification,
+    openPopupOverlay,
+    closePopupOverlay,
   };
 
   document.addEventListener("DOMContentLoaded", () => {

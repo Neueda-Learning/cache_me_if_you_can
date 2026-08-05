@@ -3,6 +3,7 @@ package com.neueda.transaction_monitor.rule;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -28,7 +29,7 @@ class DailyLimitRuleTest {
         Rule definition = new Rule();
         definition.setThreshold(new BigDecimal("50000"));
 
-        when(jdbcTemplate.queryForObject(any(String.class), eq(BigDecimal.class), any(), any(), any()))
+        when(jdbcTemplate.queryForObject(any(String.class), eq(BigDecimal.class), anyInt()))
                 .thenReturn(new BigDecimal("49500"));
 
         Transaction tx = new Transaction();
@@ -45,7 +46,7 @@ class DailyLimitRuleTest {
         Rule definition = new Rule();
         definition.setThreshold(new BigDecimal("50000"));
 
-        when(jdbcTemplate.queryForObject(any(String.class), eq(BigDecimal.class), any(), any(), any()))
+        when(jdbcTemplate.queryForObject(any(String.class), eq(BigDecimal.class), anyInt()))
                 .thenReturn(new BigDecimal("49000"));
 
         Transaction tx = new Transaction();

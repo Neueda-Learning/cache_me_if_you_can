@@ -305,12 +305,17 @@ button {
 }
 
 .rule-actions-cell {
-  min-width: 220px;
+  min-width: 170px;
+}
+
+th.rule-actions-header {
+  min-width: 170px;
+  text-align: left;
 }
 
 .rule-actions {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
@@ -343,7 +348,59 @@ button {
   text-align: center;
   min-width: 280px;
   max-width: 420px;
-  animation: fadeInUp 0.25s ease;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+#toast.show {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+#toast.hide {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.96);
+}
+
+/* ---- Alert Popup (fade + scale) --------------------------- */
+.hawk-popup-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 8888;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.hawk-popup-overlay .hawk-popup-card {
+  transform: scale(0.96);
+  opacity: 0;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.hawk-popup-overlay.is-open {
+  display: flex;
+  opacity: 1;
+}
+
+.hawk-popup-overlay.is-open .hawk-popup-card {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.hawk-popup-overlay.is-closing {
+  opacity: 0;
+}
+
+.hawk-popup-overlay.is-closing .hawk-popup-card {
+  transform: scale(0.96);
+  opacity: 0;
 }
 
 /* ---- Confirmation Modal ----------------------------------- */
@@ -522,7 +579,7 @@ button {
   background: var(--hawk-white);
   border: 1px solid var(--hawk-border);
   border-radius: var(--radius);
-  padding: 20px;
+  padding: 16px;
   box-shadow: var(--hawk-shadow-sm);
 }
 .chart-title {
@@ -536,8 +593,16 @@ button {
   width: 3px; height: 14px;
   background: var(--hawk-red); border-radius: 2px;
 }
-.chart-container { position: relative; height: 230px; }
-.chart-container canvas { max-height: 230px; }
+.chart-container { position: relative; height: 210px; }
+.chart-container canvas { max-height: 210px; }
+
+.chart-card.line-focus .chart-container {
+  height: 280px;
+}
+
+.chart-card.line-focus .chart-container canvas {
+  max-height: 280px;
+}
 
 .chart-grid-wide {
   display: grid;
@@ -552,6 +617,20 @@ button {
 
 .chart-grid-wide .chart-card.tall .chart-container {
   height: 260px;
+}
+
+.dashboard-top-charts {
+  align-items: stretch;
+}
+
+.dashboard-top-charts .chart-container,
+.dashboard-top-charts .chart-card.line-focus .chart-container {
+  height: 240px;
+}
+
+.dashboard-top-charts .chart-container canvas,
+.dashboard-top-charts .chart-card.line-focus .chart-container canvas {
+  max-height: 240px;
 }
 
 /* ============================================================

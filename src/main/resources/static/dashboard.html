@@ -83,7 +83,7 @@
       </section>
 
       <!-- Charts Row -->
-      <section class="grid grid-3" style="margin-bottom:20px;">
+      <section class="grid grid-3 dashboard-top-charts" style="margin-bottom:20px;">
         <article class="chart-card" style="grid-column: span 1;">
           <p class="chart-title">Alert Status Distribution</p>
           <div class="chart-container">
@@ -96,7 +96,7 @@
             <canvas id="chartAlertSeverity"></canvas>
           </div>
         </article>
-        <article class="chart-card" style="grid-column: span 1;">
+        <article class="chart-card line-focus" style="grid-column: span 1;">
           <p class="chart-title">Transaction Volume — Last 7 Days</p>
           <div class="chart-container">
             <canvas id="chartTxTrend"></canvas>
@@ -105,7 +105,7 @@
       </section>
 
       <section class="chart-grid-wide">
-        <article class="chart-card full tall">
+        <article class="chart-card full tall line-focus">
           <p class="chart-title">Hourly Traffic Profile (Last 24h)</p>
           <div class="chart-container">
             <canvas id="chartTxHourly"></canvas>
@@ -157,8 +157,8 @@
   <div id="toast"></div>
 
   <!-- ── New-Alert Popup Modal ─────────────────────────────── -->
-  <div id="alertPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:8888;align-items:center;justify-content:center;">
-    <div style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
+  <div id="alertPopup" class="hawk-popup-overlay">
+    <div class="hawk-popup-card" style="background:#fff;border-radius:12px;width:460px;max-width:94vw;max-height:80vh;overflow-y:auto;box-shadow:0 12px 60px rgba(219,0,17,0.25);border-top:4px solid #DB0011;">
       <div style="padding:20px 24px 0;display:flex;align-items:center;justify-content:space-between;">
         <div style="display:flex;align-items:center;gap:10px;">
           <span style="font-size:1.5rem;">🚨</span>

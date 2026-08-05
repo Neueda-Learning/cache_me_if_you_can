@@ -3,6 +3,7 @@ package com.neueda.transaction_monitor.rule;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
@@ -29,7 +30,7 @@ class VelocityTest {
         definition.setThreshold(new BigDecimal("5"));
         definition.setTimeWindow(10);
 
-        when(jdbcTemplate.queryForObject(any(String.class), eq(Long.class), any(), any(), any()))
+        when(jdbcTemplate.queryForObject(any(String.class), eq(Long.class), anyInt(), anyInt()))
                 .thenReturn(5L);
 
         Transaction tx = new Transaction();
@@ -46,7 +47,7 @@ class VelocityTest {
         definition.setThreshold(new BigDecimal("5"));
         definition.setTimeWindow(10);
 
-        when(jdbcTemplate.queryForObject(any(String.class), eq(Long.class), any(), any(), any()))
+        when(jdbcTemplate.queryForObject(any(String.class), eq(Long.class), anyInt(), anyInt()))
                 .thenReturn(4L);
 
         Transaction tx = new Transaction();
