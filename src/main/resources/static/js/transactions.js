@@ -132,6 +132,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (filterValueEl) filterValueEl.addEventListener('input', debouncedLoad);
   if (fromEl) fromEl.addEventListener('change', debouncedLoad);
   if (toEl) toEl.addEventListener('change', debouncedLoad);
+  if (filterByEl) filterByEl.addEventListener('change', updateFilterInput);
 
   document.getElementById("btnClear").addEventListener("click", () => {
     filterForm.reset();
