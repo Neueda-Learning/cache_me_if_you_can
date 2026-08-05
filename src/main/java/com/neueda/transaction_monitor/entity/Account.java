@@ -16,6 +16,7 @@ public class Account {
     private Integer accountId;
     private String accountNumber;
     private String accountHolderName;
+    private String email;
     private BigDecimal balance;
     private LocalDateTime createdAt;
 

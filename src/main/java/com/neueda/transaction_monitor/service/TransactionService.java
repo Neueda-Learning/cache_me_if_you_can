@@ -17,6 +17,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.text.NumberFormat;
 import java.util.List;
 import java.util.Set;
 
@@ -29,16 +32,22 @@ public class TransactionService {
     private final RuleRepository ruleRepository;
     private final AlertService alertService;
     private final JdbcTemplate jdbcTemplate;
+    private final com.neueda.transaction_monitor.repository.AccountRepository accountRepository;
+    private final MailService mailService;
 
     @Autowired
     public TransactionService(TransactionRepository transactionRepository,
                               RuleRepository ruleRepository,
                               AlertService alertService,
-                              JdbcTemplate jdbcTemplate) {
+                              JdbcTemplate jdbcTemplate,
+                              com.neueda.transaction_monitor.repository.AccountRepository accountRepository,
+                              MailService mailService) {
         this.transactionRepository = transactionRepository;
         this.ruleRepository = ruleRepository;
         this.alertService = alertService;
         this.jdbcTemplate = jdbcTemplate;
+        this.accountRepository = accountRepository;
+        this.mailService = mailService;
     }
 
     // Backwards-compatible constructor used by unit tests that only supply the
@@ -49,6 +58,8 @@ public class TransactionService {
         this.ruleRepository = null;
         this.alertService = null;
         this.jdbcTemplate = null;
+        this.accountRepository = null;
+        this.mailService = null;
     }
 
     /**
@@ -112,6 +123,52 @@ public class TransactionService {
             // Create alert using AlertService DTO
             CreateAlertRequest req = new CreateAlertRequest(tr.ruleId(), Long.valueOf(saved.getTransactionId()), sev);
             alertService.createAlert(req);
+
+            // If the triggered alert is HIGH severity, write a mail into the account's folder
+            if (sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.HIGH) {
+                try {
+                    String accNum = null;
+                    String acctEmail = null;
+                    if (accountRepository != null) {
+                        var acctOpt = accountRepository.findById(saved.getAccountId());
+                        if (acctOpt.isPresent()) {
+                            accNum = acctOpt.get().getAccountNumber();
+                            try { acctEmail = acctOpt.get().getEmail(); } catch (Exception ignore) {}
+                        }
+                    }
+                    String subject = "HAWK: High Severity Transaction";
+
+                    LocalDateTime ts = saved.getTimeStamp() == null ? LocalDateTime.now() : saved.getTimeStamp();
+                    DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm a", Locale.ENGLISH);
+                    String formattedDate = ts.format(dtf);
+
+                    NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+                    String formattedAmount = nf.format(saved.getAmount() == null ? java.math.BigDecimal.ZERO : saved.getAmount());
+
+                    String txnLabel = "TXN-" + saved.getTransactionId();
+
+                    StringBuilder sb = new StringBuilder();
+                    sb.append("Dear Customer,\n\n");
+                    sb.append("We detected a transaction on your account that has been flagged for review by our monitoring system.\n\n");
+                    sb.append("Transaction Details\n");
+                    sb.append("------------------------------------------------------------\n");
+                    sb.append(String.format("Transaction ID : %s\n", txnLabel));
+                    sb.append(String.format("Date & Time    : %s\n", formattedDate));
+                    sb.append(String.format("Amount         : %s\n", formattedAmount));
+                    sb.append("Status         : Under Review\n");
+                    sb.append(String.format("Severity       : %s\n\n", sev.name()));
+                    sb.append("Why are you receiving this email?\n");
+                    sb.append("Our monitoring system identified this transaction as unusual based on our security checks. This does not necessarily mean the transaction is fraudulent, but we recommend reviewing it as soon as possible.\n\n");
+                    sb.append("Kind regards,\n\nTransaction Monitoring & Alert Management Team\n");
+
+                    String body = sb.toString();
+                    if (mailService != null) {
+                        mailService.sendToAccountFolder(accNum, acctEmail, subject, body);
+                    }
+                } catch (Exception e) {
+                    // don't block transaction processing on mail failures
+                }
+            }
         }
 
         return saved;

@@ -22,12 +22,12 @@ public class AccountRepository {
     }
 
     public List<Account> findAll() {
-        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Created_At FROM ACCOUNT ORDER BY Account_ID ASC";
+        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Email, Created_At FROM ACCOUNT ORDER BY Account_ID ASC";
         return jdbcTemplate.query(sql, rowMapper());
     }
 
     public Optional<Account> findById(Integer id) {
-        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Created_At FROM ACCOUNT WHERE Account_ID = ?";
+        String sql = "SELECT Account_ID, Account_Number, Account_Holder_Name, Balance, Email, Created_At FROM ACCOUNT WHERE Account_ID = ?";
         return jdbcTemplate.query(sql, rowMapper(), id).stream().findFirst();
     }
 
@@ -52,6 +52,7 @@ public class AccountRepository {
             a.setAccountId(rs.getInt("Account_ID"));
             a.setAccountNumber(rs.getString("Account_Number"));
             a.setAccountHolderName(rs.getString("Account_Holder_Name"));
+            try { a.setEmail(rs.getString("Email")); } catch (Exception e) { /* optional */ }
             a.setBalance(rs.getBigDecimal("Balance"));
             java.sql.Timestamp ts = rs.getTimestamp("Created_At");
             if (ts != null) a.setCreatedAt(ts.toLocalDateTime());
