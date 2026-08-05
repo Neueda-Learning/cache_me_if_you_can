@@ -3,6 +3,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const statusFilter = document.getElementById("statusFilter");
   const severityFilter = document.getElementById("severityFilter");
 
+  // Debounce helper to avoid firing too many requests while user toggles filters
+  function debounce(fn, wait) {
+    let t = null;
+    return (...args) => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => fn.apply(null, args), wait);
+    };
+  }
+
   async function loadAlerts() {
     window.HawkUI.showLoader();
     const q = new URLSearchParams();
@@ -43,6 +52,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Debounced loader for interactive filtering
+  const debouncedLoad = debounce(() => {
+    loadAlerts().catch((err) => {
+      window.HawkUI.hideLoader();
+      window.HawkUI.showToast(err.message);
+    });
+  }, 300);
+
+  // Wire change events so selecting filters auto-loads results
+  if (statusFilter) statusFilter.addEventListener('change', debouncedLoad);
+  if (severityFilter) severityFilter.addEventListener('change', debouncedLoad);
+
+  // Initial load
   loadAlerts().catch((err) => {
     window.HawkUI.hideLoader();
     window.HawkUI.showToast(err.message);
