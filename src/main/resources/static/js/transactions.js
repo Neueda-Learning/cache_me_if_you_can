@@ -76,14 +76,46 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Dynamic filter input behaviour ------------------------------------------------
+  function updateFilterInput() {
+    if (!filterByEl || !filterValueEl) return;
+    const val = (filterByEl.value || "ALL");
+    switch (val) {
+      case 'transactionId':
+        filterValueEl.placeholder = 'Enter Transaction ID';
+        filterValueEl.style.display = '';
+        filterValueEl.type = 'number';
+        break;
+      case 'accountNumber':
+        filterValueEl.placeholder = 'Enter Account Number';
+        filterValueEl.style.display = '';
+        filterValueEl.type = 'text';
+        break;
+      case 'payeeAccountNumber':
+        filterValueEl.placeholder = 'Enter Payee Account Number';
+        filterValueEl.style.display = '';
+        filterValueEl.type = 'text';
+        break;
+      default:
+        filterValueEl.style.display = 'none';
+        filterValueEl.value = '';
+        break;
+    }
+  }
+
+  if (filterByEl) filterByEl.addEventListener('change', updateFilterInput);
+
   document.getElementById("btnClear").addEventListener("click", () => {
     filterForm.reset();
+    updateFilterInput();
     loadTransactions().catch((err) => {
       window.HawkUI.hideLoader();
       window.HawkUI.showToast(err.message);
     });
   });
 
+  // Initialize UI state and load
+  updateFilterInput();
   loadTransactions().catch((err) => {
     window.HawkUI.hideLoader();
     window.HawkUI.showToast(err.message);
