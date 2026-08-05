@@ -2,7 +2,7 @@ package com.neueda.transaction_monitor.service;
 
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
+import java.time.ZoneId;
 import java.util.stream.Collectors;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -57,7 +57,7 @@ public class AlertService {
                 var r = ruleRepository.findById(g.ruleId()).orElse(null);
                 ruleName = r == null ? null : r.getRuleName();
             }
-            OffsetDateTime firstCreated = g.firstCreated() == null ? null : g.firstCreated().atOffset(ZoneOffset.UTC);
+            OffsetDateTime firstCreated = g.firstCreated() == null ? null : g.firstCreated().atZone(ZoneId.systemDefault()).toOffsetDateTime();
             String message = String.format("%d %s alerts for rule %s in the last %d minutes",
                 g.count(), g.severity().name().toLowerCase(), ruleName == null ? g.ruleId().toString() : ruleName, mins);
 
@@ -110,8 +110,8 @@ public class AlertService {
     }
 
     private AlertResponse toResponse(Alert alert) {
-        OffsetDateTime created = alert.getCreatedAt() == null ? null : alert.getCreatedAt().atOffset(ZoneOffset.UTC);
-        OffsetDateTime closed  = alert.getClosedAt()  == null ? null : alert.getClosedAt().atOffset(ZoneOffset.UTC);
+        OffsetDateTime created = alert.getCreatedAt() == null ? null : alert.getCreatedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime();
+        OffsetDateTime closed  = alert.getClosedAt()  == null ? null : alert.getClosedAt().atZone(ZoneId.systemDefault()).toOffsetDateTime();
         return new AlertResponse(
             alert.getAlertId(),
             alert.getRuleId(),
