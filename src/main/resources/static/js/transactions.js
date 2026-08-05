@@ -10,6 +10,15 @@ document.addEventListener("DOMContentLoaded", () => {
     volume: document.getElementById("statVolume"),
   };
 
+  // Simple debounce to avoid firing too many requests while the user is typing
+  function debounce(fn, wait) {
+    let t = null;
+    return (...args) => {
+      if (t) clearTimeout(t);
+      t = setTimeout(() => fn.apply(null, args), wait);
+    };
+  }
+
   function toEpoch(value) {
     if (!value) return null;
     const t = new Date(value).getTime();
@@ -30,11 +39,13 @@ document.addEventListener("DOMContentLoaded", () => {
     window.HawkUI.showLoader();
     const filterBy = (filterByEl?.value || "ALL").trim();
     const filterValue = (filterValueEl?.value || "").trim();
+    // If user selected a specific filter but did not provide a value, treat as ALL
+    const effectiveFilterBy = (filterBy !== 'ALL' && !filterValue) ? 'ALL' : filterBy;
     const from = fromEl?.value || "";
     const to = toEl?.value || "";
 
     const params = new URLSearchParams();
-    if (filterBy) params.set("filterBy", filterBy);
+    if (effectiveFilterBy) params.set("filterBy", effectiveFilterBy);
     if (filterValue) params.set("value", filterValue);
 
     const data = await window.HawkUI.apiRequest(`/api/transactions/list?${params.toString()}`);
@@ -103,6 +114,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  // Debounced loader used by interactive filter inputs
+  const debouncedLoad = debounce(() => {
+    loadTransactions().catch((err) => {
+      window.HawkUI.hideLoader();
+      window.HawkUI.showToast(err.message);
+    });
+  }, 300);
+
+  if (filterByEl) filterByEl.addEventListener('change', () => {
+    updateFilterInput();
+    // trigger load when the filter type changes
+    debouncedLoad();
+  });
+
+  // When user types/selects a filter value or changes date range, fetch automatically
+  if (filterValueEl) filterValueEl.addEventListener('input', debouncedLoad);
+  if (fromEl) fromEl.addEventListener('change', debouncedLoad);
+  if (toEl) toEl.addEventListener('change', debouncedLoad);
   if (filterByEl) filterByEl.addEventListener('change', updateFilterInput);
 
   document.getElementById("btnClear").addEventListener("click", () => {
