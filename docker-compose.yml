@@ -41,6 +41,9 @@ services:
       SPRING_MAIL_PORT: 587
       SPRING_MAIL_USERNAME: ${SPRING_MAIL_USERNAME}
       SPRING_MAIL_PASSWORD: ${SPRING_MAIL_PASSWORD}
+      HAWK_MAIL_OUTPUT_DIR: /app/account-mails
+    volumes:
+      - ./account-mails:/app/account-mails
 
 volumes:
   hawk_mysql_data:

@@ -1,16 +1,18 @@
 package com.neueda.transaction_monitor.service;
 
 import com.neueda.transaction_monitor.exception.TransactionNotFoundException;
+import com.neueda.transaction_monitor.entity.Account;
 import com.neueda.transaction_monitor.model.AccountSummary;
 import com.neueda.transaction_monitor.model.Transaction;
 import com.neueda.transaction_monitor.repository.TransactionRepository;
 import com.neueda.transaction_monitor.repository.RuleRepository;
 import com.neueda.transaction_monitor.dto.AlertDto.CreateAlertRequest;
-import com.neueda.transaction_monitor.service.AlertService;
 import com.neueda.transaction_monitor.rule.AmountThresholdRule;
 import com.neueda.transaction_monitor.rule.DailyLimitRule;
 import com.neueda.transaction_monitor.rule.NewPayeeRule;
 import com.neueda.transaction_monitor.rule.Velocity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,10 +24,13 @@ import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.text.NumberFormat;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
 public class TransactionService {
+
+    private static final Logger log = LoggerFactory.getLogger(TransactionService.class);
 
     private static final Set<String> VALID_TYPES = Set.of("TRANSFER", "PAYMENT", "WITHDRAWAL");
 
@@ -112,7 +117,7 @@ public class TransactionService {
         java.util.List<TriggeredRule> triggered = new java.util.ArrayList<>();
 
         for (var ruleDef : activeRules) {
-            com.neueda.transaction_monitor.rule.Rule ruleImpl = null;
+            com.neueda.transaction_monitor.rule.Rule ruleImpl;
             switch (ruleDef.getRuleType()) {
                 case THRESHOLD   -> ruleImpl = new AmountThresholdRule(ruleDef);
                 case DAILY_LIMIT -> ruleImpl = new DailyLimitRule(ruleDef, jdbcTemplate);
@@ -139,16 +144,19 @@ public class TransactionService {
             CreateAlertRequest req = new CreateAlertRequest(tr.ruleId(), Long.valueOf(saved.getTransactionId()), sev);
             alertService.createAlert(req);
 
-            // If the triggered alert is HIGH severity, write a mail into the account's folder
-            if (sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.HIGH) {
+            // Send notifications for HIGH and CRITICAL alerts.
+            boolean shouldNotify = sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.HIGH
+                || sev == com.neueda.transaction_monitor.model.Alert.AlertSeverity.CRITICAL;
+            if (shouldNotify) {
                 try {
                     String accNum = null;
                     String acctEmail = null;
                     if (accountRepository != null) {
-                        var acctOpt = accountRepository.findById(saved.getAccountId());
+                        Optional<Account> acctOpt = accountRepository.findById(saved.getAccountId());
                         if (acctOpt.isPresent()) {
-                            accNum = acctOpt.get().getAccountNumber();
-                            try { acctEmail = acctOpt.get().getEmail(); } catch (Exception ignore) {}
+                            Account acct = acctOpt.get();
+                            accNum = acct.getAccountNumber();
+                            acctEmail = acct.getEmail();
                         }
                     }
                     String subject = "HAWK: High Severity Transaction";
@@ -157,7 +165,7 @@ public class TransactionService {
                     DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd-MMM-yyyy hh:mm a", Locale.ENGLISH);
                     String formattedDate = ts.format(dtf);
 
-                    NumberFormat nf = NumberFormat.getCurrencyInstance(new Locale("en", "IN"));
+                    NumberFormat nf = NumberFormat.getCurrencyInstance(Locale.forLanguageTag("en-IN"));
                     String formattedAmount = nf.format(saved.getAmount() == null ? java.math.BigDecimal.ZERO : saved.getAmount());
 
                     String txnLabel = "TXN-" + saved.getTransactionId();
@@ -178,10 +186,14 @@ public class TransactionService {
 
                     String body = sb.toString();
                     if (mailService != null) {
+                        log.info("Sending alert mail for txn {} severity {} to account {} email {}",
+                            saved.getTransactionId(), sev, accNum, acctEmail);
                         mailService.sendToAccountFolder(accNum, acctEmail, subject, body);
                     }
                 } catch (Exception e) {
-                    // don't block transaction processing on mail failures
+                    // Do not block transaction processing on mail failures; log for diagnosis.
+                    log.warn("Mail dispatch failed for txn {} severity {}: {}",
+                        saved.getTransactionId(), sev, e.getMessage(), e);
                 }
             }
         }
@@ -236,10 +248,10 @@ public class TransactionService {
         String fb = "ALL";
         String val = value;
         if (filterBy != null && !filterBy.isBlank()) {
-            switch (filterBy.toLowerCase()) {
-                case "transactionid", "transactionId", "txn", "txnid", "transaction" -> fb = "TXN";
-                case "accountnumber", "accountNumber", "account" -> fb = "ACCOUNT";
-                case "payeeaccountnumber", "payeeAccountNumber", "payee" -> fb = "PAYEE";
+            switch (filterBy.toLowerCase(Locale.ROOT)) {
+                case "transactionid", "txn", "txnid", "transaction" -> fb = "TXN";
+                case "accountnumber", "account" -> fb = "ACCOUNT";
+                case "payeeaccountnumber", "payee" -> fb = "PAYEE";
                 default -> fb = "ALL";
             }
         }
