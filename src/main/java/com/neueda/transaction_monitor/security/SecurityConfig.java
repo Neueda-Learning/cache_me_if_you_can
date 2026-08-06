@@ -33,6 +33,8 @@ public class SecurityConfig {
                 // Static assets and HTML pages — client-side JS handles auth redirect
                 .requestMatchers("/", "/index.html", "/login.html", "/signup.html",
                                  "/css/**", "/js/**", "/images/**", "/*.html").permitAll()
+                // Swagger / OpenAPI endpoints
+                .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
                 // Auth endpoints
                 .requestMatchers("/api/auth/**").permitAll()
                 // Everything else requires a valid JWT
@@ -59,4 +61,3 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 }
-

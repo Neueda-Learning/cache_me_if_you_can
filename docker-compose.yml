@@ -26,9 +26,10 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
       SPRING_PROFILES_ACTIVE: docker
+      SERVER_PORT: 8081
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/transaction_monitoring?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -47,4 +48,3 @@ services:
 
 volumes:
   hawk_mysql_data:
-
